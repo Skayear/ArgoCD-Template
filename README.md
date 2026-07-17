@@ -1,4 +1,14 @@
-# ArgoCD-Template
+<p align="center">
+  <img src="https://raw.githubusercontent.com/argoproj/argo-cd/master/ui/src/assets/images/argo_o.svg" alt="Argo CD logo" width="180"/>
+</p>
+
+<h1 align="center">ArgoCD-Template</h1>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Argo%20CD-EF7B4D?style=for-the-badge&logo=argo&logoColor=white" alt="Argo CD"/>
+  <img src="https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white" alt="Kubernetes"/>
+  <img src="https://img.shields.io/badge/Helm-0F1689?style=for-the-badge&logo=helm&logoColor=white" alt="Helm"/>
+</p>
 
 Plantilla base para levantar un ambiente nuevo en Kubernetes usando **Argo CD** con el patrón **App of Apps**, gestionando toda la plataforma (Argo CD mismo, add-ons de cluster, gateway, observabilidad, certificados, DNS, autoscaling, secretos) como código versionado en Git.
 
