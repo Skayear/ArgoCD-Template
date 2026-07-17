@@ -1,0 +1,15 @@
+valuesObject:
+  dnsEndpoints:
+    enabled: true
+    annotations:
+      external-dns.alpha.kubernetes.io/access: public
+    items:
+      - name: argocd-dns
+        namespace: argocd
+        endpoints:
+          - dnsName: argocd.internal.example.com
+            recordTTL: 300
+            recordType: CNAME
+            targets:
+              - gateway.internal.example.com
+

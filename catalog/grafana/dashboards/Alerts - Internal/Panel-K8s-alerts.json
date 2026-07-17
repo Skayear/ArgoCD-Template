@@ -1,0 +1,833 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 0,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 4,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Muestra la disponibilidad de los nodos de K8s basados en pormetheus node-exporter scrape status\n\nValores \n- 1 = Nodo Disponible y Exporter respondiendo\n- 0 = Nodo no Disponible o Exporter no disponible \nEste panel es usado como fuente para las Alertas de P1 - Kubernetes Node Unreachable",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Availability",
+                "axisPlacement": "left",
+                "axisSoftMax": 1,
+                "axisSoftMin": 0,
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 1,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "stepBefore",
+                "lineWidth": 3,
+                "pointSize": 0,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "semi-dark-red",
+                    "value": 0
+                  },
+                  {
+                    "color": "dark-green",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "bool_on_off"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 24,
+            "x": 0,
+            "y": 1
+          },
+          "id": 2,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "multi",
+              "sort": "asc"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "max by(instance) (\n  up{job=\"node-exporter\"}\n)\n* on(instance) group_left(nodename)\nnode_uname_info{job=\"node-exporter\"}",
+              "legendFormat": "{{nodename}} - {{instance}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "K8s - Node Availability",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Cluster Health",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 5,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Muestra el Disk Pressure de los nodos de K8s, reportados por  kube-state-metrics.\n\nValue meanings:\n- 0 = No hay disk pressure detectectada\n- 1 = Disk pressure Detectada\n\nUsualmente DiskPressure indica bajo almacenamiento disponible, excesivo uso de imagenes, crecimiento de logs, o  Problemas con el Filesistem del nodo.\n\nEste panel es usado para la alerta de  Kubernetes disk pressure.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Disk Pressure",
+                "axisPlacement": "left",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "stepBefore",
+                "lineWidth": 3,
+                "pointSize": 0,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "decimals": 0,
+              "mappings": [],
+              "max": 1,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 0,
+            "y": 2
+          },
+          "id": 1,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "max by(node, instance) (\n  kube_node_status_condition{\n    condition=\"DiskPressure\",\n    status=\"true\"\n  }\n)",
+              "hide": false,
+              "instant": false,
+              "interval": "1m",
+              "legendFormat": "{{node}}- Ip: {{instance}}",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "K8s - Disk Pressure",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Muestra la condición de presión de memoria reportada por Kubernetes mediante kube-state-metrics.\n\nSignificado de valores:\n- 0 = No hay presión de memoria\n- 1 = MemoryPressure activo\n\nMemoryPressure normalmente indica que el nodo está bajo presión de memoria y Kubernetes puede comenzar a desalojar pods para recuperar estabilidad.\n\nEste panel se usa como referencia visual para alertas de presión de memoria en nodos Kubernetes.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Memory Pressure",
+                "axisPlacement": "left",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "stepBefore",
+                "lineWidth": 3,
+                "pointSize": 0,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "decimals": 0,
+              "mappings": [],
+              "max": 1,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 12,
+            "x": 12,
+            "y": 2
+          },
+          "id": 3,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "max by(node, instance) (\n  kube_node_status_condition{\n    condition=\"MemoryPressure\",\n    status=\"true\"\n  }\n)",
+              "hide": false,
+              "instant": false,
+              "interval": "1m",
+              "legendFormat": "{{node}}- Ip: {{instance}}",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "K8s - Memory Pressure",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Muestra la condición de presión de procesos (PIDPressure) reportada por Kubernetes mediante kube-state-metrics.\n\nSignificado de valores:\n- 0 = No hay presión de procesos\n- 1 = PIDPressure activo\n\nPIDPressure indica que el nodo se está quedando sin Process IDs (PIDs) disponibles y puede afectar la creación de nuevos procesos o contenedores.\n\nEste panel se usa como referencia visual para alertas de presión de procesos en nodos Kubernetes.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "PID Pressure",
+                "axisPlacement": "left",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "stepBefore",
+                "lineWidth": 3,
+                "pointSize": 0,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "decimals": 0,
+              "mappings": [],
+              "max": 1,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 24,
+            "x": 0,
+            "y": 19
+          },
+          "id": 7,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "max by(node, instance) (\n  kube_node_status_condition{\n    condition=\"PIDPressure\",\n    status=\"true\"\n  }\n)",
+              "hide": false,
+              "instant": false,
+              "interval": "1m",
+              "legendFormat": "{{node}}- Ip: {{instance}}",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "K8s - PID Pressure",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Node Pressure",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 2
+      },
+      "id": 8,
+      "panels": [],
+      "title": "Node Capacity",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Muestra el porcentaje de uso de CPU por nodo Kubernetes utilizando métricas de node-exporter.\n\nEl valor representa el porcentaje total de CPU utilizada durante los últimos 5 minutos.\n\nEste panel permite identificar saturación de CPU, nodos sobrecargados y tendencias de consumo.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "CPU Usage %",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed+area"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "semi-dark-yellow",
+                "value": 70
+              },
+              {
+                "color": "semi-dark-orange",
+                "value": 85
+              },
+              {
+                "color": "semi-dark-red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 3
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "100 - ( (\n    avg by(instance)(\n      rate(node_cpu_seconds_total{\n        mode=\"idle\"\n      }[5m])\n    ) * 100\n  )\n)\n* on(instance) group_left(nodename)\nnode_uname_info",
+          "legendFormat": "{{nodename}}- Ip: {{instance}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "K8s - CPU Usage",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Muestra el porcentaje de uso de memoria RAM por nodo Kubernetes utilizando métricas de node-exporter.\n\nEste panel permite identificar consumo elevado de memoria y tendencias que podrían derivar en MemoryPressure.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Memory Usage %",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed+area"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "semi-dark-yellow",
+                "value": 70
+              },
+              {
+                "color": "semi-dark-orange",
+                "value": 85
+              },
+              {
+                "color": "semi-dark-red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 3
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "(\n  (\n    1 - (\n      node_memory_MemAvailable_bytes\n      /\n      node_memory_MemTotal_bytes\n    )\n  ) * 100\n)\n* on(instance) group_left(nodename)\nnode_uname_info",
+          "legendFormat": "{{nodename}}- Ip: {{instance}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "K8s - Memory Usage",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Muestra el porcentaje de uso de disco por nodo Kubernetes utilizando métricas de node-exporter.\n\nEste panel permite detectar crecimiento sostenido de almacenamiento antes de entrar en DiskPressure.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Disk Usage %",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed+area"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "semi-dark-yellow",
+                "value": 70
+              },
+              {
+                "color": "semi-dark-orange",
+                "value": 85
+              },
+              {
+                "color": "semi-dark-red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "(\n  (\n    1 - (\n      node_filesystem_avail_bytes{\n        mountpoint=\"/\",\n        fstype!=\"tmpfs\"\n      }\n      /\n      node_filesystem_size_bytes{\n        mountpoint=\"/\",\n        fstype!=\"tmpfs\"\n      }\n    )\n  ) * 100\n)\n* on(instance) group_left(nodename)\nnode_uname_info",
+          "legendFormat": "{{nodename}}- Ip: {{instance}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "K8s - Disk Usage",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "id": 6,
+      "panels": [],
+      "title": "Workloads",
+      "type": "row"
+    }
+  ],
+  "preload": false,
+  "refresh": "1m",
+  "schemaVersion": 42,
+  "tags": [
+    "alerts",
+    "kubernetes",
+    "k8s"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "2026-05-22T16:21:45.912Z",
+    "to": "2026-05-22T16:51:09.177Z"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "K8s Alerts",
+  "uid": "k8s-alerts",
+  "version": 17
+}

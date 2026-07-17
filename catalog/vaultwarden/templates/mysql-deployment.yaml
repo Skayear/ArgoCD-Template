@@ -1,0 +1,76 @@
+{{- if .Values.mysql.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vaultwarden.fullname" . }}-mysql
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "vaultwarden.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mysql
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "vaultwarden.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: mysql
+  template:
+    metadata:
+      labels:
+        {{- include "vaultwarden.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: "{{ required "mysql.image.repository is required when mysql.enabled is true" .Values.mysql.image.repository }}:{{ required "mysql.image.tag is required when mysql.enabled is true" .Values.mysql.image.tag }}"
+          imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
+          ports:
+            - name: mysql
+              containerPort: 3306
+          {{- if or .Values.mysql.secrets .Values.mysql.configmaps }}
+          envFrom:
+          {{- range .Values.mysql.secrets }}
+            - secretRef:
+                name: {{ . | quote }}
+          {{- end }}
+          {{- range .Values.mysql.configmaps }}
+            - configMapRef:
+                name: {{ . | quote }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.mysql.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - mysqladmin ping -h 127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - mysqladmin ping -h 127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD"
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+          {{- if .Values.mysql.persistence.enabled }}
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+          {{- end }}
+      {{- if .Values.mysql.persistence.enabled }}
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: {{ include "vaultwarden.fullname" . }}-mysql
+      {{- end }}
+{{- end }}

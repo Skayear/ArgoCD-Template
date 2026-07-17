@@ -1,0 +1,15 @@
+apiVersion: v2
+name: external-secrets-aws
+description: Helm chart that configures AWS access for External Secrets Operator
+type: application
+version: 0.1.0
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - external-secrets
+  - aws
+  - irsa
+  - secretsmanager
+  - parameterstore

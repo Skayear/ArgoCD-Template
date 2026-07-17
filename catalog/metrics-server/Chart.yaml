@@ -1,0 +1,19 @@
+apiVersion: v2
+name: metrics-server
+description: Helm chart that deploys metrics-server for cluster resource metrics
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: metrics-server
+    version: 3.13.0
+    repository: https://kubernetes-sigs.github.io/metrics-server/
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - metrics-server
+  - kubernetes
+  - autoscaling
+  - resource-metrics

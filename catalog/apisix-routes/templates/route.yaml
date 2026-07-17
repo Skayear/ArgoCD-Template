@@ -1,0 +1,46 @@
+{{- if .Values.routes.enabled }}
+{{- range .Values.routes.items }}
+{{- $defaultPlugins := default (list) $.Values.routes.defaultPlugins }}
+{{- $itemPlugins := default (list) .plugins }}
+{{- $privateAccessPlugin := list }}
+
+{{- if (default false .privateAccess) }}
+{{- $privateAccessPlugin = list (dict
+  "name" "ip-restriction"
+  "enable" true
+  "config" (dict
+    "whitelist" $.Values.routes.privateAccessWhitelist
+  )
+) }}
+{{- end }}
+
+{{- $plugins := concat $defaultPlugins $privateAccessPlugin $itemPlugins }}
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: {{ .name | quote }}
+  namespace: {{ .namespace | quote }}
+spec:
+  {{- with .ingressClassName }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  http:
+    - name: {{ .name | quote }}
+      match:
+        hosts:
+          {{- toYaml .hosts | nindent 10 }}
+        paths:
+          {{- toYaml .paths | nindent 10 }}
+      backends:
+        - serviceName: {{ .backend.serviceName | quote }}
+          servicePort: {{ .backend.servicePort }}
+          {{- with .backend.resolveGranularity }}
+          resolveGranularity: {{ . }}
+          {{- end }}
+      {{- if $plugins }}
+      plugins:
+        {{- toYaml $plugins | nindent 8 }}
+      {{- end }}
+---
+{{- end }}
+{{- end }}

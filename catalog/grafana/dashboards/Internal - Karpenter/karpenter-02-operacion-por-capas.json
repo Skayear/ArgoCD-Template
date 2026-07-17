@@ -1,0 +1,1792 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Capa 0 - ¿Tengo las métricas necesarias?",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Pods kube-state-metrics",
+      "description": "Qué mide:\n- Presencia de kube_pod_status_phase desde kube-state-metrics.\n\nPara qué sirve:\n- Es un chequeo de salud de datos, no de aplicación.\n- Sin esta métrica no se pueden leer correctamente Pending, Running ni estados de pods.\n\nCuándo preocuparse:\n- Si aparece No data o 0.\n- Si otros dashboards de Kubernetes también pierden información de pods.\n\nQué revisar:\n- Pod de kube-state-metrics.\n- ServiceMonitor/PodMonitor.\n- Targets de Prometheus.\n- RBAC de kube-state-metrics.\n\nColores / lectura rápida:\n- Verde: métrica presente.\n- Amarillo/Naranja: datos parciales o pocos samples.\n- Rojo/No data: Prometheus no está viendo kube-state-metrics.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count(kube_pod_status_phase)",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "CPU cAdvisor",
+      "description": "Qué mide:\n- Presencia de container_cpu_usage_seconds_total desde cAdvisor/kubelet.\n\nPara qué sirve:\n- Confirma que hay métricas de uso real de CPU de contenedores.\n- Sin esto solo puedes ver requests, no consumo real.\n\nCuándo preocuparse:\n- Si no hay datos, los paneles de uso real por nodo o contenedor quedan incompletos.\n- Si desaparece después de cambios en kubelet scraping o Prometheus.\n\nColores / lectura rápida:\n- Verde: cAdvisor está siendo scrapeado.\n- Amarillo/Naranja: datos parciales.\n- Rojo/No data: revisar scrape de kubelet/cAdvisor.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 1,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count(container_cpu_usage_seconds_total)",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Karpenter metrics",
+      "description": "Qué mide:\n- Presencia de la métrica karpenter_build_info.\n\nPara qué sirve:\n- Confirma que Prometheus está scrapeando a Karpenter.\n- Si este panel no tiene datos, los paneles que dependen de métricas karpenter_* pueden quedar vacíos aunque Karpenter esté funcionando.\n\nCuándo preocuparse:\n- Si da 0 o No data.\n- Si después de actualizar Karpenter desaparecen las métricas.\n- Si el ServiceMonitor, Service o labels del scrape cambiaron.\n\nColores / lectura rápida:\n- Verde: Prometheus ve métricas de Karpenter.\n- Amarillo/Naranja: revisar si hay scrape parcial.\n- Rojo / No data: revisar ServiceMonitor, targets de Prometheus y endpoint de métricas.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 1,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count(karpenter_build_info)",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Node labels",
+      "description": "Qué mide:\n- Presencia de kube_node_labels desde kube-state-metrics.\n\nPara qué sirve:\n- Esta métrica permite enriquecer nodos con NodePool, capacity type, instance type, zona, arquitectura y sistema operativo.\n- Es fundamental para dashboards de Karpenter basados en labels.\n\nCuándo preocuparse:\n- Si el panel da 0 o No data.\n- Si las tablas aparecen vacías aunque existan nodos.\n- Si faltan labels como label_karpenter_sh_nodepool o label_node_kubernetes_io_instance_type.\n\nQué revisar:\n- Configuración de kube-state-metrics y allowlist/metric-labels.\n- Que los nodos tengan labels de Karpenter.\n\nColores / lectura rápida:\n- Verde: labels disponibles.\n- Amarillo/Naranja: datos incompletos.\n- Rojo/No data: no se pueden construir vistas por NodePool/instance type.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 1,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count(kube_node_labels)",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 6,
+      "type": "row",
+      "title": "Capa 1 - Nodos activos creados por Karpenter",
+      "gridPos": {
+        "x": 0,
+        "y": 7,
+        "w": 24,
+        "h": 1
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Nodos Karpenter Ready",
+      "description": "Qué mide:\n- Cantidad de nodos creados por Karpenter que están en condición Ready.\n- Es la señal más rápida para saber cuánta capacidad usable tiene el cluster desde Karpenter.\n\nPara qué sirve:\n- Confirmar que Karpenter está entregando nodos funcionales.\n- Comparar la capacidad actual contra el baseline histórico del cluster.\n- Detectar caídas de capacidad después de cambios en NodePools, AMIs, subnets, security groups o IAM.\n\nCuándo preocuparse:\n- Si baja a 0 y todavía hay workloads que dependen de Karpenter.\n- Si cae al mismo tiempo que suben Pods Pending.\n- Si fluctúa mucho, puede haber churn por consolidación, drift, errores cloud provider o capacity constraints.\n\nColores / lectura rápida:\n- Verde: hay nodos Ready.\n- Amarillo/Naranja: pocos nodos; revisar si es esperado por baja demanda.\n- Rojo: sin nodos Ready o capacidad insuficiente.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum((kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"} * on(node) group_left() kube_node_status_condition{condition=\"Ready\",status=\"true\"}))",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "Nodos Karpenter NotReady",
+      "description": "Qué mide:\n- Cantidad de nodos de Karpenter que existen pero no están Ready.\n\nPara qué sirve:\n- Identificar nodos que fueron creados pero no terminaron de integrarse bien al cluster.\n- Ayuda a separar un problema de provisioning de un problema de scheduling.\n\nCuándo preocuparse:\n- Si queda mayor a 0 durante varios minutos.\n- Si coincide con errores de CNI, kubelet, bootstrap, IAM, AMI, security groups o subnets.\n- Si se repite después de cada scale-up.\n\nColores / lectura rápida:\n- Verde: 0 NotReady, estado sano.\n- Amarillo/Naranja: al menos un nodo en transición o con problema.\n- Rojo: varios nodos NotReady; revisar describe node, eventos y logs de Karpenter.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 8,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum((kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"} * on(node) group_left() kube_node_status_condition{condition=\"Ready\",status=\"false\"}))",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "Nodos Spot activos",
+      "description": "Qué mide:\n- Cantidad de nodos Ready con capacity type Spot.\n\nPara qué sirve:\n- Preparado para cuando habiliten Spot.\n- Permite ver cuánto ahorro potencial viene de capacidad interrumpible.\n\nContexto actual:\n- Si todavía no usan Spot, lo esperado es 0.\n\nCuándo preocuparse:\n- Si aparece Spot sin haberlo diseñado.\n- Si esperabas Spot y queda en 0 después de habilitarlo.\n- Si workloads críticos terminan en Spot por error de tolerations/selectors.\n\nColores / lectura rápida:\n- Verde: valor esperado según estrategia.\n- Amarillo/Naranja: revisar cambio inesperado.\n- Rojo: Spot ausente o presente de forma riesgosa, según el objetivo.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum((kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\",label_karpenter_sh_capacity_type=\"spot\"} * on(node) group_left() kube_node_status_condition{condition=\"Ready\",status=\"true\"}))",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Nodos On-Demand activos",
+      "description": "Qué mide:\n- Cantidad de nodos Ready con capacity type On-Demand.\n\nPara qué sirve:\n- Muestra la capacidad estable y no interrumpible del cluster.\n- Hoy debería explicar casi toda la capacidad si aún no usan Spot.\n\nCuándo preocuparse:\n- Si baja a 0 y hay workloads productivos.\n- Si cae mientras suben Pods Pending.\n- Si se esperaba un mínimo On-Demand para estabilidad y no se cumple.\n\nColores / lectura rápida:\n- Verde: capacidad On-Demand presente.\n- Amarillo/Naranja: capacidad baja, validar si es esperado.\n- Rojo: sin capacidad On-Demand donde debería existir.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 8,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum((kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\",label_karpenter_sh_capacity_type=\"on-demand\"} * on(node) group_left() kube_node_status_condition{condition=\"Ready\",status=\"true\"}))",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "wideLayout": true,
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Inventario de nodos activos de Karpenter",
+      "description": "Qué muestra:\n- Tabla de nodos Ready creados por Karpenter con NodePool, capacity type, instance type, zona, arquitectura y sistema operativo.\n\nPara qué sirve:\n- Es el inventario operativo rápido del cluster dinámico.\n- Permite validar que Karpenter está usando los labels esperados.\n- Ayuda a investigar incidentes de scheduling, costo, zonas o instance types.\n\nCuándo usarlo:\n- Después de cambios en NodePools o EC2NodeClasses.\n- Cuando hay Pods Pending.\n- Cuando quieres confirmar qué tipo de capacidad está realmente corriendo.\n\nCuándo preocuparse:\n- Tabla vacía con nodos existentes: puede faltar kube_node_labels o allowlist de kube-state-metrics.\n- Instance types inesperados.\n- Zonas no esperadas.\n- Nodos Ready en NodePools que deberían estar apagados.\n\nColores / lectura rápida:\n- Ready en verde indica nodo utilizable.\n- Valores vacíos en columnas importantes indican labels faltantes.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 24,
+        "h": 10
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"} * on(node) group_left() kube_node_status_condition{condition=\"Ready\",status=\"true\"}",
+          "legendFormat": "{{node}}",
+          "range": false,
+          "refId": "A",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "instance": true,
+              "endpoint": true,
+              "service": true,
+              "namespace": true,
+              "pod": true,
+              "container": true
+            },
+            "renameByName": {
+              "node": "Nodo",
+              "label_karpenter_sh_nodepool": "NodePool",
+              "label_karpenter_sh_capacity_type": "Capacity",
+              "label_node_kubernetes_io_instance_type": "Instance type",
+              "label_topology_kubernetes_io_zone": "Zona",
+              "label_kubernetes_io_arch": "Arch",
+              "label_kubernetes_io_os": "OS",
+              "Value": "Ready"
+            },
+            "indexByName": {
+              "Nodo": 0,
+              "NodePool": 1,
+              "Capacity": 2,
+              "Instance type": 3,
+              "Zona": 4,
+              "Arch": 5,
+              "OS": 6,
+              "Ready": 7
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ready"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "1": {
+                        "text": "Ready",
+                        "color": "green"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false,
+          "fields": ""
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Nodos Karpenter Ready por NodePool",
+      "description": "Qué mide:\n- Evolución histórica de nodos Ready agrupados por NodePool.\n\nPara qué sirve:\n- Ver cuándo un NodePool escala hacia arriba o hacia abajo.\n- Detectar si una aplicación o clase de workload empuja crecimiento de un pool específico.\n\nCuándo preocuparse:\n- Un NodePool crítico cae a 0 inesperadamente.\n- Hay oscilación frecuente de nodos.\n- La cantidad de nodos no baja nunca después de bajar la carga.\n\nColores / lectura rápida:\n- Cada color representa un NodePool.\n- No hay color bueno/malo; importa la tendencia y si coincide con la demanda esperada.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (label_karpenter_sh_nodepool) (kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"} * on(node) group_left() kube_node_status_condition{condition=\"Ready\",status=\"true\"})",
+          "legendFormat": "{{label_karpenter_sh_nodepool}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Nodos Karpenter por capacity type",
+      "description": "Qué mide:\n- Evolución de nodos Ready separados por Spot y On-Demand.\n\nPara qué sirve:\n- Visualizar el mix de capacidad a lo largo del tiempo.\n- Validar cambios futuros si agregan Spot.\n\nContexto actual:\n- Si no usan Spot, es normal ver solo On-Demand.\n\nCuándo preocuparse:\n- Cambios inesperados en el mix.\n- Ausencia de On-Demand donde se requiere estabilidad.\n- Aparición de Spot en workloads no preparados.\n\nColores / lectura rápida:\n- Cada color representa un capacity type.\n- Interpretar contra la estrategia definida, no como semáforo automático.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 25,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (label_karpenter_sh_capacity_type) (kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"} * on(node) group_left() kube_node_status_condition{condition=\"Ready\",status=\"true\"})",
+          "legendFormat": "{{label_karpenter_sh_capacity_type}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 14,
+      "type": "row",
+      "title": "Capa 2 - Scheduling y demanda",
+      "gridPos": {
+        "x": 0,
+        "y": 33,
+        "w": 24,
+        "h": 1
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "Pods Pending por namespace",
+      "description": "Qué mide:\n- Pods en Pending agrupados por namespace.\n\nPara qué sirve:\n- Ubicar rápidamente qué equipo, aplicación o namespace está generando demanda no satisfecha.\n- Ayuda a priorizar troubleshooting cuando varios workloads compiten por capacidad.\n\nCuándo preocuparse:\n- Pending sostenido en namespaces productivos.\n- Pending después de un deploy o escalado.\n- Pending acompañado de NodeClaims creados sin nodos Ready.\n\nSiguiente paso recomendado:\n- Revisar eventos del pod: kubectl -n <namespace> describe pod <pod>.\n- Buscar mensajes de FailedScheduling.\n\nColores / lectura rápida:\n- Cada color representa un namespace.\n- Verde/normal esperado: líneas en 0 o sin actividad.\n- Cualquier línea sostenida arriba de 0 requiere revisión.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 34,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (namespace) (kube_pod_status_phase{phase=\"Pending\",namespace=~\"$namespace\"})",
+          "legendFormat": "{{namespace}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 16,
+      "type": "timeseries",
+      "title": "Pods vistos por Karpenter",
+      "description": "Qué mide:\n- Pods que Karpenter clasifica internamente por namespace y estado.\n\nPara qué sirve:\n- Ayuda a confirmar qué demanda está viendo Karpenter.\n- Útil cuando Kubernetes muestra Pending pero Karpenter no parece reaccionar.\n\nCuándo preocuparse:\n- No data mientras hay métricas de Karpenter; puede haber cambio de versión o métrica no disponible.\n- Muchos pods en estado no resuelto durante varios minutos.\n\nCómo usarlo:\n- Compararlo con Pods Pending por namespace.\n- Si Pending sube pero este panel no cambia, revisar compatibilidad de métricas o filtros.\n\nColores / lectura rápida:\n- Cada color representa namespace/estado.\n- Estados sostenidos asociados a falta de scheduling requieren revisión.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 34,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (namespace,state) (karpenter_pods_state{namespace=~\"$namespace\"})",
+          "legendFormat": "{{namespace}} {{state}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 17,
+      "type": "row",
+      "title": "Capa 3 - Provisioning de Karpenter",
+      "gridPos": {
+        "x": 0,
+        "y": 42,
+        "w": 24,
+        "h": 1
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 18,
+      "type": "timeseries",
+      "title": "NodeClaims creados por minuto",
+      "description": "Qué mide:\n- Tasa de creación de NodeClaims por minuto.\n\nPara qué sirve:\n- Muestra cuándo Karpenter decide pedir capacidad nueva.\n- Es la transición entre demanda de pods y creación real de nodos.\n\nCuándo preocuparse:\n- Pods Pending altos pero sin NodeClaims creados: Karpenter no está actuando o los pods no son compatibles.\n- NodeClaims creados continuamente: puede haber churn, límites mal definidos o consolidación agresiva.\n\nColores / lectura rápida:\n- Cada color representa NodePool/reason.\n- Picos aislados son normales; actividad sostenida debe investigarse.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 43,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (nodepool,reason) (rate(karpenter_nodeclaims_created_total[5m]) * 60)",
+          "legendFormat": "{{nodepool}} {{reason}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 19,
+      "type": "timeseries",
+      "title": "NodeClaims terminados por minuto",
+      "description": "Qué mide:\n- Tasa de NodeClaims terminados por minuto.\n\nPara qué sirve:\n- Permite ver scale-down, consolidación, drift, expiración o interrupciones.\n- Ayuda a detectar churn de nodos.\n\nCuándo preocuparse:\n- Terminaciones frecuentes sin baja real de carga.\n- Terminaciones al mismo tiempo que hay Pods Pending.\n- Razones inesperadas o repetidas.\n\nColores / lectura rápida:\n- Cada color representa NodePool/reason.\n- No todo término es malo; lo problemático es frecuencia alta o razón inesperada.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 43,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (nodepool,reason) (rate(karpenter_nodeclaims_terminated_total[5m]) * 60)",
+          "legendFormat": "{{nodepool}} {{reason}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 20,
+      "type": "row",
+      "title": "Capa 4 - Salud cloud provider",
+      "gridPos": {
+        "x": 0,
+        "y": 51,
+        "w": 24,
+        "h": 1
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "Errores cloud provider",
+      "description": "Qué mide:\n- Tasa de errores por minuto en llamadas de Karpenter al cloud provider.\n\nPara qué sirve:\n- Detecta problemas al pedir, resolver o terminar capacidad en AWS.\n- Es uno de los mejores indicadores para saber si Karpenter está fallando fuera de Kubernetes.\n\nCuándo preocuparse:\n- Cualquier valor sostenido mayor a 0 merece revisión.\n- Si coincide con Pods Pending, puede explicar por qué no aparecen nuevos nodos.\n- Si coincide con NodeClaims creados pero sin nodos Ready, revisar la integración con AWS.\n\nCausas típicas:\n- Falta de permisos IAM.\n- Subnets o security groups mal descubiertos.\n- Instance profile incorrecto.\n- AMI o EC2NodeClass inválido.\n- Falta de capacidad para instance types permitidos.\n- Límites/cuotas de AWS.\n\nColores / lectura rápida:\n- Verde: 0 errores.\n- Amarillo/Naranja: errores intermitentes.\n- Rojo: errores sostenidos; revisar logs del controller y eventos de NodeClaim.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 52,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (method,error) (rate(karpenter_cloudprovider_errors_total[5m]) * 60)",
+          "legendFormat": "{{method}} {{error}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "Latencia p95 cloud provider",
+      "description": "Qué mide:\n- Percentil 95 de duración de llamadas de Karpenter al cloud provider.\n\nPara qué sirve:\n- Muestra si AWS está respondiendo lento a operaciones que Karpenter necesita para provisionar o resolver capacidad.\n- Ayuda a diferenciar lentitud externa de problemas internos del cluster.\n\nCuándo preocuparse:\n- p95 alto sostenido, especialmente junto con errores cloud provider.\n- Picos al mismo tiempo que Pods Pending o NodeClaims demorados.\n- Latencia alta después de cambios de IAM, subnets, security groups o EC2NodeClass.\n\nColores / lectura rápida:\n- Verde: latencia baja/normal.\n- Amarillo/Naranja: degradación o lentitud temporal.\n- Rojo: lentitud sostenida que puede impactar scale-up.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 52,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le,method) (rate(karpenter_cloudprovider_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{method}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 23,
+      "type": "row",
+      "title": "Capa 5 - Uso de los nodos",
+      "gridPos": {
+        "x": 0,
+        "y": 60,
+        "w": 24,
+        "h": 1
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 24,
+      "type": "timeseries",
+      "title": "CPU usada por nodo",
+      "description": "Qué mide:\n- Uso real de CPU por nodo calculado desde cAdvisor.\n\nPara qué sirve:\n- Comparar consumo real contra requests y capacidad allocatable.\n- Detectar nodos calientes o workloads que consumen más de lo esperado.\n\nCuándo preocuparse:\n- Un nodo consume mucho más que otros de forma sostenida.\n- Uso real alto con requests bajos: puede haber requests mal calibrados.\n- Uso alto junto con throttling o latencia de aplicaciones.\n\nColores / lectura rápida:\n- Cada color representa un nodo.\n- El riesgo se interpreta por tendencia y cercanía a capacidad, no solo por color.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 61,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (node) (rate(container_cpu_usage_seconds_total{container=~\".+\"}[5m]))",
+          "legendFormat": "{{node}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 25,
+      "type": "timeseries",
+      "title": "Pods por nodo",
+      "description": "Qué mide:\n- Cantidad de pods asignados por nodo.\n\nPara qué sirve:\n- Ver distribución de pods y posibles desbalances.\n- Ayuda a entender si los nodos están llenándose por límite de pods antes que por CPU/memoria.\n\nCuándo preocuparse:\n- Un nodo concentra demasiados pods frente a los demás.\n- Hay nodos con pocos pods pero alta CPU/memoria.\n- Pods Pending por límite de pods por nodo.\n\nColores / lectura rápida:\n- Cada color representa un nodo.\n- No hay semáforo automático; revisar desbalance y límites.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 61,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (node) (kube_pod_info{namespace=~\"$namespace\"})",
+          "legendFormat": "{{node}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
+      "id": 26,
+      "type": "row",
+      "title": "Guía de lectura",
+      "gridPos": {
+        "x": 0,
+        "y": 69,
+        "w": 24,
+        "h": 1
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 27,
+      "type": "text",
+      "title": "Cómo leer el dashboard sin salir a Kubernetes",
+      "description": "Guía de lectura del dashboard con criterios operativos para interpretar las capas, síntomas y próximos pasos.",
+      "gridPos": {
+        "x": 0,
+        "y": 70,
+        "w": 24,
+        "h": 9
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "# Cómo leer este dashboard\n\nEste dashboard está armado por capas para no mezclar síntomas con causas.\n\n## Orden recomendado de lectura\n\n1. **Capa 0 - Métricas necesarias**\n   - Primero valida que Prometheus esté recibiendo kube-state-metrics, cAdvisor y métricas de Karpenter.\n   - Si esta capa falla, los demás paneles pueden estar vacíos aunque el cluster funcione.\n\n2. **Capa 1 - Nodos activos**\n   - Revisa nodos Ready, NotReady, capacity type e inventario.\n   - Si hay NotReady, el problema suele estar en bootstrap, CNI, IAM, AMI, subnets o security groups.\n\n3. **Capa 2 - Scheduling y demanda**\n   - Revisa Pods Pending.\n   - Pending sostenido significa demanda no satisfecha o restricciones que impiden scheduling.\n\n4. **Capa 3 - Provisioning**\n   - Revisa NodeClaims creados y terminados.\n   - Si hay Pending pero no hay NodeClaims, Karpenter no está reaccionando o los pods no matchean ningún NodePool.\n   - Si hay NodeClaims pero no aparecen nodos Ready, revisar eventos de NodeClaim y errores cloud provider.\n\n5. **Capa 4 - Cloud provider**\n   - Errores o latencia alta suelen apuntar a AWS: permisos, cuotas, capacity, AMI, subnets, security groups o instance profile.\n\n6. **Capa 5 - Uso de nodos**\n   - Compara uso real y distribución de pods para detectar desbalance, requests mal calibrados o capacidad ociosa.\n\n## Regla práctica\n\n- **Pending alto + NodeClaims subiendo + nodos NotReady:** problema de nodos/bootstrap.\n- **Pending alto + sin NodeClaims:** problema de constraints, NodePool o scheduling.\n- **CloudProvider errors > 0:** revisar Karpenter logs y eventos de NodeClaims.\n- **Mucho churn:** revisar consolidation, drift, expireAfter, limits y cambios frecuentes de workloads.\n"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "karpenter",
+    "eks",
+    "autoscaling",
+    "operations"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus datasource",
+        "multi": false,
+        "name": "DS_PROMETHEUS",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(kube_pod_status_phase, namespace)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Namespace",
+        "multi": true,
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(kube_pod_status_phase, namespace)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(kube_node_labels, label_karpenter_sh_nodepool)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "NodePool",
+        "multi": true,
+        "name": "nodepool",
+        "options": [],
+        "query": {
+          "query": "label_values(kube_node_labels, label_karpenter_sh_nodepool)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "name": "capacity_type",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"}, label_karpenter_sh_capacity_type)",
+        "query": {
+          "query": "label_values(kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"}, label_karpenter_sh_capacity_type)",
+          "refId": "StandardVariableQuery"
+        },
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "instance_type",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"}, label_node_kubernetes_io_instance_type)",
+        "query": {
+          "query": "label_values(kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"}, label_node_kubernetes_io_instance_type)",
+          "refId": "StandardVariableQuery"
+        },
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Karpenter - 02 Operación por capas",
+  "uid": "karpenter-operacion-capas",
+  "version": 4,
+  "weekStart": "",
+  "description": "Dashboard operacional por capas: validación de métricas, nodos, scheduling, provisioning, cloud provider y uso real.\nDashboards curados con información operacional detallada en cada panel."
+}

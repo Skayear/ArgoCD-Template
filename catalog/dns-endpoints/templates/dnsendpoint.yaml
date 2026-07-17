@@ -1,0 +1,23 @@
+{{- if .Values.dnsEndpoints.enabled }}
+{{- range .Values.dnsEndpoints.items }}
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: {{ .name | quote }}
+  namespace: {{ .namespace | quote }}
+  {{- $annotations := merge (default (dict) .annotations) (default (dict) $.Values.dnsEndpoints.annotations) }}
+  {{- with $annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- $labels := merge (default (dict) .labels) (default (dict) $.Values.dnsEndpoints.labels) }}
+  {{- with $labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  endpoints:
+    {{- toYaml .endpoints | nindent 4 }}
+---
+{{- end }}
+{{- end }}

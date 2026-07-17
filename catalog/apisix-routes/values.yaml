@@ -1,0 +1,26 @@
+routes:
+  enabled: false
+
+  privateAccessWhitelist:
+    - "203.0.113.10/32"
+    - "203.0.113.20/32"
+    - "10.100.0.0/22"
+    - "10.0.0.0/16"
+
+  defaultPlugins:
+    - name: prometheus
+      enable: true
+
+  items: []
+  # - name: example
+  #   namespace: default
+  #   ingressClassName: apisix
+  #   privateAccess: false
+  #   hosts:
+  #     - example.internal.example.com
+  #   paths:
+  #     - "/*"
+  #   backend:
+  #     serviceName: example-service
+  #     servicePort: 80
+  #     resolveGranularity: service

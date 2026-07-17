@@ -1,0 +1,8 @@
+apiVersion: v2
+name: internal
+description: App of Apps chart that instantiates base cluster resources for the internal cluster
+type: application
+version: 0.1.0
+
+maintainers:
+  - name: Equipo de Plataforma

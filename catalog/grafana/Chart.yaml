@@ -1,0 +1,20 @@
+apiVersion: v2
+name: grafana
+description: Helm chart that deploys standalone Grafana with reference defaults
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: grafana
+    condition: enabled
+    version: 10.5.15
+    repository: https://grafana.github.io/helm-charts
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - grafana
+  - dashboards
+  - observability
+  - visualization

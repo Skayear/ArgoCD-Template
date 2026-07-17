@@ -1,0 +1,105 @@
+config:
+  spec:
+    destination:
+      server: https://kubernetes.default.svc
+    source:
+      repoURL: https://github.com/<your-org>/<your-repo>.git
+      targetRevision: main
+
+applications:
+  # Wave -1: bootstrap de AppProjects y acceso a clusters administrados.
+  - name: argocd-projects
+    namespace: argocd
+    path: catalog/argocd-projects
+    project: default
+    syncWave: "-1"
+    valuesObjectFile: values/projects.yaml
+
+  - name: argocd-external-secrets-aws
+    namespace: external-secrets
+    path: catalog/external-secrets-aws
+    project: default
+    releaseName: argocd-external-secrets-aws
+    syncWave: "-1"
+    valuesObjectFile: values/external-secrets-aws.yaml
+
+  - name: argocd-clusters
+    namespace: argocd
+    path: catalog/argocd-clusters
+    project: default
+    syncWave: "-1"
+    valuesObjectFile: values/clusters.yaml
+
+  - name: karpenter-crd
+    namespace: karpenter
+    path: catalog/crds/karpenter-crd
+    project: devops
+    syncWave: "-1"
+
+  # Wave 0: infraestructura base.
+  - name: internal-azure-workload-identity
+    namespace: azure-workload-identity-system
+    path: catalog/azure-workload-identity
+    project: devops
+    syncWave: "0"
+    valuesObjectFile: values/azure-workload-identity.yaml
+
+  - name: karpenter-controller
+    namespace: karpenter
+    path: catalog/karpenter
+    project: devops
+    syncWave: "0"
+    valuesObjectFile: values/karpenter-controller.yaml
+
+  - name: karpenter-nodepools
+    namespace: karpenter
+    path: catalog/karpenter-nodepools
+    project: devops
+    syncWave: "1"
+    valuesObjectFile: values/karpenter-nodepools.yaml
+
+  # ── Wave 2: recursos que dependen de un ClusterIssuer existente ──────────────
+  # ArgoCD espera a que clusterissuers esté healthy antes de crear los certificados.
+
+  # Wave 2+: aplicaciones y observabilidad devops.
+  - name: sonarqube
+    namespace: sonarqube
+    path: catalog/sonarqube
+    project: devops
+    syncWave: "2"
+    valuesObjectFile: values/sonarqube.yaml
+
+  - name: sonarqube-dns
+    namespace: sonarqube
+    path: catalog/dns-endpoints
+    project: devops
+    syncWave: "2"
+    valuesObjectFile: values/dns.yaml
+
+  - name: sonarqube-private-dns
+    namespace: sonarqube
+    path: catalog/dns-endpoints
+    project: devops
+    syncWave: "2"
+    valuesObjectFile: values/private-dns.yaml
+
+  - name: sonarqube-certificates
+    namespace: sonarqube
+    path: catalog/certificates
+    project: devops
+    syncWave: "2"
+    valuesObjectFile: values/certificates.yaml
+
+  - name: sonarqube-routes
+    namespace: sonarqube
+    path: catalog/apisix-routes
+    project: devops
+    syncWave: "3"
+    valuesObjectFile: values/routes.yaml
+
+  - name: internal-sonarqube-postgres-exporter
+    namespace: sonarqube
+    path: catalog/postgres-exporter
+    project: devops
+    syncWave: "5"
+    valuesObjectFile: values/sonarqube-postgres-exporter.yaml

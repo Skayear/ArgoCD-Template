@@ -1,0 +1,20 @@
+apiVersion: v2
+name: headlamp
+description: Helm chart that deploys Headlamp with optional Karpenter plugin support
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: headlamp
+    condition: enabled
+    version: 0.43.0
+    repository: https://kubernetes-sigs.github.io/headlamp/
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - headlamp
+  - kubernetes
+  - karpenter
+  - dashboard

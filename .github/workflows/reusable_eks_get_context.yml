@@ -1,0 +1,168 @@
+name: Get EKS Context
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment_name:
+        description: GitHub environment name
+        required: false
+        type: string
+      cluster_name:
+        description: EKS cluster name
+        required: true
+        type: string
+      aws_region:
+        description: AWS region where the cluster exists
+        required: true
+        type: string
+      kubeconfig_alias:
+        description: Optional kubeconfig context alias
+        required: false
+        type: string
+      namespace:
+        description: Optional namespace for kubectl get pods
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      environment_name:
+        description: GitHub environment name
+        required: false
+        type: string
+      cluster_name:
+        description: EKS cluster name
+        required: true
+        type: string
+      aws_region:
+        description: AWS region where the cluster exists
+        required: true
+        type: string
+      kubeconfig_alias:
+        description: Optional kubeconfig context alias
+        required: false
+        type: string
+      namespace:
+        description: Optional namespace for kubectl get pods
+        required: false
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
+        required: false
+    outputs:
+      current_context:
+        description: Generated kubeconfig context name
+        value: ${{ jobs.get-context.outputs.current_context }}
+
+permissions:
+  contents: read
+
+jobs:
+  get-context:
+    name: Configure kubectl context for EKS
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment_name }}
+    outputs:
+      current_context: ${{ steps.export-context.outputs.current_context }}
+    env:
+      CLUSTER_NAME: ${{ inputs.cluster_name }}
+      AWS_REGION: ${{ inputs.aws_region }}
+      KUBECONFIG_ALIAS: ${{ inputs.kubeconfig_alias }}
+      NAMESPACE: ${{ inputs.namespace }}
+
+    steps:
+      - name: Validate AWS authentication parameters
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${CLUSTER_NAME}" ]]; then
+            echo "cluster_name is empty. Check EKS_CLUSTER_NAME in the selected environment." >&2
+            exit 1
+          fi
+
+          if [[ -z "${AWS_REGION}" ]]; then
+            echo "aws_region is empty. Check AWS_REGION in the selected environment." >&2
+            exit 1
+          fi
+
+          if [[ -n "${{ secrets.AWS_ACCESS_KEY_ID }}" && -n "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]]; then
+            echo "Using static AWS credentials from GitHub secrets."
+            exit 0
+          fi
+
+          echo "You must provide AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY secrets." >&2
+          exit 1
+
+      - name: Configure AWS credentials with access keys
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Update kubeconfig for EKS
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          args=(
+            eks
+            update-kubeconfig
+            --name "${CLUSTER_NAME}"
+            --region "${AWS_REGION}"
+          )
+
+          if [[ -n "${KUBECONFIG_ALIAS}" ]]; then
+            args+=(--alias "${KUBECONFIG_ALIAS}")
+          fi
+
+          aws "${args[@]}"
+
+      - name: Export current context
+        id: export-context
+        shell: bash
+        run: |
+          set -euo pipefail
+          current_context="$(kubectl config current-context)"
+          echo "current_context=${current_context}" >> "$GITHUB_OUTPUT"
+          echo "Current kubectl context: ${current_context}"
+
+      - name: Debug AWS identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws sts get-caller-identity
+
+      - name: Debug EKS token
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws eks get-token \
+            --cluster-name ${{ inputs.cluster_name }} \
+            --region ${{ inputs.aws_region }} > /dev/null
+
+      - name: Check cluster connectivity
+        shell: bash
+        run: |
+          set -euo pipefail
+          kubectl auth can-i get pods -n "${NAMESPACE}"
+          kubectl get pods -n "${NAMESPACE}"
+
+      - name: Get pods
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -n "${NAMESPACE}" ]]; then
+            echo "Listing pods in namespace ${NAMESPACE}"
+            kubectl get pods -n "${NAMESPACE}" -o wide
+            exit 0
+          fi
+
+          echo "Listing pods in all namespaces"
+          kubectl get pods -A -o wide

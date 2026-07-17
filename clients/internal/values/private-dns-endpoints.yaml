@@ -1,0 +1,22 @@
+valuesObject:
+  dnsEndpoints:
+    enabled: true
+    annotations:
+      external-dns.alpha.kubernetes.io/access: private
+    items:
+      - name: gateway-public-private-dns
+        namespace: ingress-apisix
+        endpoints:
+          - dnsName: gateway.internal.example.com
+            recordTTL: 300
+            recordType: CNAME
+            targets:
+              - k8s-example-nlb-0000000000.elb.us-east-1.amazonaws.com
+      - name: argocd-private-dns
+        namespace: argocd
+        endpoints:
+          - dnsName: argocd.internal.example.com
+            recordTTL: 300
+            recordType: CNAME
+            targets:
+              - gateway-interno.internal.example.com

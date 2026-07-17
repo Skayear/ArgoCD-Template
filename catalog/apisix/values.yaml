@@ -1,0 +1,100 @@
+# Values passed to the apisix subchart dependency
+nlbInternal:
+  enabled: false
+  name: ""
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+  externalTrafficPolicy: Local
+  loadBalancerClass: service.k8s.aws/nlb
+  ports:
+    http:
+      enabled: true
+      port: 80
+      targetPort: 9080
+      protocol: TCP
+    tls:
+      enabled: true
+      port: 443
+      targetPort: 9443
+      protocol: TCP
+
+apisix:
+  service:
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+      external-dns.alpha.kubernetes.io/hostname: gateway.internal.example.com
+
+  apisix:
+    ssl:
+      enabled: true
+    deployment:
+      mode: standalone
+      role: traditional
+      role_traditional:
+        config_provider: yaml
+    prometheus:
+      enabled: true
+      path: /apisix/prometheus/metrics
+      containerPort: 9091
+      metricPrefix: apisix_
+    pluginAttrs:
+      prometheus:
+        prefer_name: true
+        export_uri: /apisix/prometheus/metrics
+        metric_prefix: apisix_
+        enable_export_server: true
+        metrics:
+          http_status:
+            expire: 0
+          http_latency:
+            expire: 0
+          bandwidth:
+            expire: 0
+        export_addr:
+          ip: 0.0.0.0
+          port: 9091
+
+  metrics:
+    serviceMonitor:
+      enabled: true
+      interval: 15s
+
+  externalEtcd:
+    user: ""
+    host: []
+
+  etcd:
+    enabled: false
+
+  ingress-controller:
+    enabled: true
+    config:
+      provider:
+        type: apisix-standalone
+        initSyncDelay: "10s"
+    deployment:
+      replicas: 1
+      resources:
+        requests:
+          cpu: 500m
+          memory: 256Mi
+        limits:
+          cpu: 2
+          memory: 512Mi
+    autoscaling:
+      enabled: true
+      version: 2
+      minReplicas: 1
+      maxReplicas: 20
+      targetCPUUtilizationPercentage: 70
+      targetMemoryUtilizationPercentage: 70
+    apisix:
+      adminService:
+        name: apisix-admin
+        namespace: ingress-apisix
+        port: 9180
+    gatewayProxy:
+      createDefault: true
+      provider:
+        type: ControlPlane

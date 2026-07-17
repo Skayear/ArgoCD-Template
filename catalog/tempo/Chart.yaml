@@ -1,0 +1,20 @@
+apiVersion: v2
+name: tempo
+description: Helm chart that deploys Tempo with reference defaults
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: tempo-distributed
+    condition: enabled
+    version: 1.18.1
+    repository: https://grafana.github.io/helm-charts
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - tempo
+  - tracing
+  - observability
+  - monitoring

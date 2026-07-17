@@ -1,0 +1,6 @@
+{{- /*
+Bundle the upstream CRDs explicitly so Argo CD manages them as regular
+manifests. The subchart CRDs are skipped at the Application level to avoid
+duplicate rendering.
+*/ -}}
+{{ .Files.Get "files/aws-load-balancer-controller-crds.yaml" }}

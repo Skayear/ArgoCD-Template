@@ -1,0 +1,38 @@
+enabled: false
+
+# Values passed to the OpenCost subchart dependency.
+opencost:
+  # The wrapper chart and upstream dependency share the same name, so upstream
+  # values must live under opencost.opencost.* to reach the subchart.
+  opencost:
+    # Cluster identity used in OpenCost reports and labels.
+    exporter:
+      defaultClusterId: internal
+
+    # Keep the chart aligned with the in-cluster Prometheus Operator and avoid
+    # duplicate legacy kube-state-metrics series.
+    metrics:
+      kubeStateMetrics:
+        emitKsmV1Metrics: false
+        emitKsmV1MetricsOnly: false
+      serviceMonitor:
+        enabled: true
+        additionalLabels:
+          release: internal-prometheus-stack
+
+    # OpenCost queries the internal Prometheus service in the monitoring namespace.
+    prometheus:
+      external:
+        enabled: true
+        url: http://internal-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+      internal:
+        enabled: false
+
+    # UI remains enabled with stock settings.
+    ui:
+      enabled: true
+
+    # Keep pricing on defaults for now; we can enable cloud cost later when the
+    # pricing model is agreed.
+    customPricing:
+      enabled: false

@@ -1,0 +1,14 @@
+apiVersion: v2
+name: apisix-routes
+description: Helm chart that creates ApisixRoute resources for the APISIX ingress controller
+type: application
+version: 0.1.0
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - apisix
+  - route
+  - ingress
+  - gateway

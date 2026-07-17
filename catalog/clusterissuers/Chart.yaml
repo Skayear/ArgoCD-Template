@@ -1,0 +1,16 @@
+apiVersion: v2
+name: clusterissuers
+description: Helm chart that creates cert-manager ClusterIssuer resources supporting AWS Route53 and Azure DNS providers
+type: application
+version: 0.1.0
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - cert-manager
+  - clusterissuer
+  - acme
+  - letsencrypt
+  - route53
+  - azure-dns

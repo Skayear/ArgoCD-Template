@@ -1,0 +1,73 @@
+valuesObject:
+  projects:
+    enabled: true
+    items:
+      - name: internal
+        description: Proyecto Argo CD para componentes internos y de plataforma.
+        sourceRepos:
+          - '*'
+        destinations:
+          - namespace: '*'
+            server: https://kubernetes.default.svc
+        clusterResourceWhitelist:
+          - group: '*'
+            kind: '*'
+        namespaceResourceWhitelist:
+          - group: '*'
+            kind: '*'
+      - name: devops
+        description: Proyecto Argo CD para aplicaciones criticas de plataforma.
+        sourceRepos:
+          - '*'
+        destinations:
+          - namespace: '*'
+            server: https://kubernetes.default.svc
+        clusterResourceWhitelist:
+          - group: '*'
+            kind: '*'
+        namespaceResourceWhitelist:
+          - group: '*'
+            kind: '*'
+
+      # Ejemplo de proyecto por cliente/ambiente, uno por cada cluster remoto
+      # registrado en clusters.yaml. Duplicar este patrón por cada
+      # cliente/ambiente nuevo.
+      - name: example-app-dev
+        description: Proyecto Argo CD para aplicaciones de example-app en dev.
+        sourceRepos:
+          - '*'
+        destinations:
+          - namespace: '*'
+            server: https://<EKS_CLUSTER_ENDPOINT>.gr7.us-east-1.eks.amazonaws.com
+        clusterResourceWhitelist:
+          - group: '*'
+            kind: '*'
+        namespaceResourceWhitelist:
+          - group: '*'
+            kind: '*'
+      - name: example-app-qa
+        description: Proyecto Argo CD para aplicaciones de example-app en qa.
+        sourceRepos:
+          - '*'
+        destinations:
+          - namespace: '*'
+            server: https://<EKS_CLUSTER_ENDPOINT>.gr7.us-east-1.eks.amazonaws.com
+        clusterResourceWhitelist:
+          - group: '*'
+            kind: '*'
+        namespaceResourceWhitelist:
+          - group: '*'
+            kind: '*'
+      - name: example-app-aks
+        description: Proyecto Argo CD para aplicaciones de example-app en un cluster AKS.
+        sourceRepos:
+          - '*'
+        destinations:
+          - namespace: '*'
+            server: https://<AKS_CLUSTER_ENDPOINT>.hcp.<region>.azmk8s.io
+        clusterResourceWhitelist:
+          - group: '*'
+            kind: '*'
+        namespaceResourceWhitelist:
+          - group: '*'
+            kind: '*'

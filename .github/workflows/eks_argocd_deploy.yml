@@ -1,0 +1,85 @@
+name: EKS ArgoCD Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  load-environment-vars:
+    name: Load environment variables
+    runs-on: ubuntu-latest
+    environment: "devops"
+    outputs:
+      cluster_name: ${{ steps.export.outputs.cluster_name }}
+      aws_region: ${{ steps.export.outputs.aws_region }}
+      namespace: ${{ steps.export.outputs.namespace }}
+    steps:
+      - name: Export environment variables
+        id: export
+        shell: bash
+        run: |
+          {
+            echo "cluster_name=${{ vars.EKS_CLUSTER_NAME }}"
+            echo "aws_region=${{ vars.AWS_REGION }}"
+            echo "namespace=${{ vars.K8S_NAMESPACE }}"
+          } >> "$GITHUB_OUTPUT"
+
+  eks-get-context:
+    name: EKS get context
+    needs: load-environment-vars
+    uses: ./.github/workflows/reusable_eks_get_context.yml
+    with:
+      environment_name: devops
+      cluster_name: ${{ needs.load-environment-vars.outputs.cluster_name }}
+      aws_region: ${{ needs.load-environment-vars.outputs.aws_region }}
+      namespace: ${{ needs.load-environment-vars.outputs.namespace }}
+    secrets: inherit
+
+  helm-deploy:
+    name: Deploy Helm Chart
+    runs-on: ubuntu-latest
+    needs:
+      - load-environment-vars
+      - eks-get-context
+    environment: "devops"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ needs.load-environment-vars.outputs.aws_region }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Update kubeconfig
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws eks update-kubeconfig \
+            --name "${{ needs.load-environment-vars.outputs.cluster_name }}" \
+            --region "${{ needs.load-environment-vars.outputs.aws_region }}"
+
+      - name: Add Argo Helm repo
+        shell: bash
+        run: |
+          set -euo pipefail
+          helm repo add argo https://argoproj.github.io/argo-helm
+          helm repo update
+
+      - name: Deploy chart
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "🚀 Deploying ArgoDC Helm chart (environment: devops)"
+          helm upgrade --install argocd argo/argo-cd \
+            --namespace "${{ needs.load-environment-vars.outputs.namespace }}" \
+            -f "./argocd/values/custom_argo.yaml" \
+            --create-namespace

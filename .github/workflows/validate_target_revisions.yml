@@ -1,0 +1,27 @@
+name: Validate Target Revisions
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  validate-target-revisions:
+    name: Validate clients targetRevision
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Validate targetRevision values
+        run: python3 scripts/check_target_revisions.py

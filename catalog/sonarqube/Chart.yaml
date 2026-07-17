@@ -1,0 +1,19 @@
+apiVersion: v2
+name: sonarqube
+description: Helm chart that deploys SonarQube as an ArgoCD Application into the cluster
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: sonarqube
+    version: 10.6.1
+    repository: https://SonarSource.github.io/helm-chart-sonarqube
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - sonarqube
+  - code-quality
+  - argocd
+  - application

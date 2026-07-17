@@ -1,0 +1,14 @@
+valuesObject:
+  dnsEndpoints:
+    enabled: true
+    annotations:
+      external-dns.alpha.kubernetes.io/access: public
+    items:
+      - name: sonarqube-dns
+        namespace: sonarqube
+        endpoints:
+          - dnsName: sonarqube.internal.example.com
+            recordTTL: 300
+            recordType: CNAME
+            targets:
+              - gateway.internal.example.com

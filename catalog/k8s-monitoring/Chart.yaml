@@ -1,0 +1,21 @@
+apiVersion: v2
+name: k8s-monitoring
+description: Helm chart that deploys Grafana Kubernetes Monitoring with reference defaults
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: k8s-monitoring
+    condition: enabled
+    version: 3.8.0
+    repository: https://grafana.github.io/helm-charts
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - k8s-monitoring
+  - alloy
+  - logs
+  - observability
+  - monitoring

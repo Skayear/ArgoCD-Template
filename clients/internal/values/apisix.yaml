@@ -1,0 +1,57 @@
+valuesObject:
+  nlbInternal:
+    enabled: true
+    name: internal-apisix-gateway-interno
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+      external-dns.alpha.kubernetes.io/access: private
+      external-dns.alpha.kubernetes.io/hostname: gateway-interno.internal.example.com
+
+  apisix:
+    replicaCount: 3
+
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 1
+        memory: 512Mi
+
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 2
+
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/instance: internal-apisix
+            app.kubernetes.io/name: apisix
+
+    service:
+      externalTrafficPolicy: Local
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+        external-dns.alpha.kubernetes.io/access: public
+        external-dns.alpha.kubernetes.io/hostname: gateway.internal.example.com
+
+    ingress-controller:
+      apisix:
+        adminService:
+          name: internal-apisix-admin
+          namespace: ingress-apisix
+          port: 9180
+      deployment:
+        replicas: 2
+        resources:
+          requests:
+            cpu: 250m
+            memory: 128Mi
+          limits:
+            cpu: 750m
+            memory: 256Mi
+      autoscaling:
+        maxReplicas: 5

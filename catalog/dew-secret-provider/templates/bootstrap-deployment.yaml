@@ -1,0 +1,40 @@
+{{- if .Values.imagePullSecret.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-swr-bootstrap
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-swr-bootstrap
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-swr-bootstrap
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: bootstrap
+          image: {{ .Values.imagePullSecret.bootstrapImage | default "busybox:1.36" }}
+          command: ["sh", "-c", "while true; do sleep 3600; done"]
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              cpu: 20m
+              memory: 32Mi
+          volumeMounts:
+            - name: dew-secrets
+              mountPath: /mnt/secrets
+              readOnly: true
+      volumes:
+        - name: dew-secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Release.Name }}-spc
+{{- end }}

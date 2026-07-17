@@ -1,0 +1,19 @@
+apiVersion: v2
+name: azure-workload-identity
+description: Helm chart that deploys Azure Workload Identity webhook as an ArgoCD Application
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: workload-identity-webhook
+    alias: azure-workload-identity
+    version: 1.5.1
+    repository: https://azure.github.io/azure-workload-identity/charts
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - azure
+  - workload-identity
+  - webhook

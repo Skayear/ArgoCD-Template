@@ -1,0 +1,846 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations y Alertas",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Dashboard de diagnostico para APISIX: salud de scrape/control plane, errores, capacidad interna y tabla de logs parseados.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": 0,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_metrics}"
+      },
+      "description": "Estado de conectividad APISIX-etcd cuando la metrica existe. Si no esta expuesta, cae automaticamente al estado de scrape (`up`) del job.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "text": "Caido"
+                },
+                "1": {
+                  "text": "OK"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_metrics}"
+          },
+          "editorMode": "code",
+          "expr": "sum(apisix_etcd_reachable{job=\"$job_metricas\"}) or on() sum(up{job=\"$job_metricas\"})",
+          "instant": false,
+          "legendFormat": "etcd",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Control plane / scrape",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_metrics}"
+      },
+      "description": "Tasa de errores de metricas de NGINX/APISIX. Debe permanecer en cero.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 4,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_metrics}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(apisix_nginx_metric_errors_total{job=\"$job_metricas\"}[$__rate_interval]))",
+          "instant": false,
+          "legendFormat": "errores/s",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Errores de metricas",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_logs}"
+      },
+      "description": "Promedio de lineas con [error] por segundo en logs de APISIX (ventana fija de 5 minutos para compatibilidad con Loki).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 3,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 0.001
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_logs}"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({job=~\"$job_logs_loki\"} |= \"[error]\" [5m])) / 300",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Errores en logs/s",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_logs}"
+      },
+      "description": "Promedio de lineas con [warn] por segundo en logs de APISIX (ventana fija de 5 minutos para compatibilidad con Loki).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 3,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 0.001
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_logs}"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({job=~\"$job_logs_loki\"} |= \"[warn]\" [5m])) / 300",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Warnings en logs/s",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_metrics}"
+      },
+      "description": "Porcentaje de espacio libre por shared dict de NGINX. Si cae cerca de cero, puede afectar rendimiento y errores internos.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 0.1
+              },
+              {
+                "color": "green",
+                "value": 0.3
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "min"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_metrics}"
+          },
+          "editorMode": "code",
+          "expr": "(apisix_shared_dict_free_space_bytes{job=\"$job_metricas\"} / on(name) apisix_shared_dict_capacity_bytes{job=\"$job_metricas\"})",
+          "legendFormat": "{{name}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Shared dict libre (%)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource_metrics}"
+      },
+      "description": "Latencia p95 separada por tipo: request (total), apisix (overhead) y upstream (backend).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource_metrics}"
+          },
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le, type) (rate(apisix_http_latency_bucket{job=\"$job_metricas\"}[$__rate_interval])))",
+          "legendFormat": "{{type}} p95",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Latencia p95 por tipo",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "${datasource_logs}"
+      },
+      "description": "Tabla de access logs de APISIX parseada para troubleshooting de rutas, status y backend.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "metodo"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 89
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ruta"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 175
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "user_agent"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 747
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "labelTypes"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 204
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fecha"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 192
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hora_proxy"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 255
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "backend"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 427
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "enablePagination": true,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "host"
+          }
+        ]
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "${datasource_logs}"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "{job=~\"$job_logs_loki\"} !~ \"\\\\[error\\\\]|\\\\[warn\\\\]\" | pattern `<remote_addr> - <remote_user> [<time_local>] <http_host> \"<request_method> <request_path> <http_version>\" <status> <body_bytes_sent> <request_time> \"<http_referer>\" \"<http_user_agent>\" <upstream_addr> <upstream_status> <upstream_response_time> \"<backend>\"`",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Access logs APISIX",
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "format": "auto",
+            "replace": false,
+            "source": "labels"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Line": true,
+              "app_kubernetes_io_name": true,
+              "container": true,
+              "detected_level": true,
+              "id": true,
+              "job": true,
+              "k8s_cluster_name": true,
+              "labelTypes": true,
+              "labels": true,
+              "service_instance_id": true,
+              "service_name": true,
+              "service_namespace": true,
+              "time_local": true,
+              "tsNs": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "Time": 0,
+              "backend": 10,
+              "container": 13,
+              "http_host": 2,
+              "http_user_agent": 15,
+              "namespace": 11,
+              "pod": 12,
+              "remote_addr": 14,
+              "request_method": 3,
+              "request_path": 4,
+              "request_time": 6,
+              "status": 5,
+              "time_local": 1,
+              "upstream_addr": 9,
+              "upstream_response_time": 8,
+              "upstream_status": 7
+            },
+            "renameByName": {
+              "Time": "fecha",
+              "backend": "backend",
+              "container": "container",
+              "http_host": "host",
+              "http_user_agent": "user_agent",
+              "namespace": "namespace",
+              "pod": "pod",
+              "remote_addr": "ip_origen",
+              "request_method": "metodo",
+              "request_path": "ruta",
+              "request_time": "tiempo_request",
+              "status": "status",
+              "time_local": "hora_proxy",
+              "upstream_addr": "upstream",
+              "upstream_response_time": "tiempo_upstream",
+              "upstream_status": "status_upstream"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "apisix",
+    "logs",
+    "troubleshooting"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "Internal Mimir",
+          "value": "prometheus"
+        },
+        "includeAll": false,
+        "label": "Metrica",
+        "name": "datasource_metrics",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "text": "Internal Loki",
+          "value": "loki"
+        },
+        "includeAll": false,
+        "label": "Logs",
+        "name": "datasource_logs",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "text": "internal-apisix-prometheus-metrics",
+          "value": "internal-apisix-prometheus-metrics"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource_metrics}"
+        },
+        "definition": "label_values(apisix_http_requests_total, job)",
+        "includeAll": false,
+        "label": "Job de metricas (Prometheus)",
+        "name": "job_metricas",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(apisix_http_requests_total, job)",
+          "refId": "A"
+        },
+        "refresh": 1,
+        "regex": "/internal-apisix-prometheus-metrics/",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "ingress-apisix/apisix",
+          "value": "ingress-apisix/apisix"
+        },
+        "datasource": {
+          "type": "loki",
+          "uid": "${datasource_logs}"
+        },
+        "definition": "label_values({job=\"ingress-apisix/apisix\"}, job)",
+        "includeAll": false,
+        "label": "Job de logs (Loki)",
+        "name": "job_logs_loki",
+        "options": [],
+        "query": {
+          "label": "job",
+          "refId": "LokiVariableQueryEditor-VariableQuery",
+          "stream": "",
+          "type": 1
+        },
+        "refresh": 1,
+        "regex": ".*/apisix.*",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "APISIX / Fallas y Logs",
+  "uid": "platform-apisix-fallas-logs",
+  "version": 2
+}

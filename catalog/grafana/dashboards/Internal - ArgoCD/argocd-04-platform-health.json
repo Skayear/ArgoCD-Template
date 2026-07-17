@@ -1,0 +1,1128 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Vista tecnica entendible para ver si ArgoCD esta bajo presion: reconciliaciones, API Kubernetes, Git, colas internas y actividad por cluster.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 9000,
+      "panels": [],
+      "title": "Carga del controller",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "id": 56,
+      "options": {
+        "dataLinks": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(round(increase(argocd_app_sync_total{namespace=~\"$namespace\",dest_server=~\"$cluster\"}[$interval]))) by ($grouping)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{$grouping}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Sync Activity",
+      "type": "timeseries",
+      "description": "Cantidad de syncs ejecutados en el intervalo. Sirve para ver volumen operativo; picos indican despliegues masivos o mucha actividad GitOps."
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 58,
+      "options": {
+        "dataLinks": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(increase(argocd_app_reconcile_count{namespace=~\"$namespace\",dest_server=~\"$cluster\"}[$interval])) by ($grouping)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{$grouping}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Reconciliation Activity",
+      "type": "timeseries",
+      "description": "Cantidad de reconciliaciones. Reconciliar significa comparar Git contra el cluster. Picos sostenidos pueden indicar drift frecuente, loops o mucho cambio."
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "description": "Duracion promedio de reconciliacion en segundos. Mas simple que el heatmap: si sube sostenidamente, ArgoCD tarda mas en comparar Git contra el cluster.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisPlacement": "auto",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 9201,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(rate(argocd_app_reconcile_sum{namespace=~\"$namespace\"}[5m])) / sum(rate(argocd_app_reconcile_count{namespace=~\"$namespace\"}[5m]))",
+          "format": "time_series",
+          "refId": "A",
+          "legendFormat": "avg"
+        }
+      ],
+      "title": "Reconciliation Avg Duration",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 73,
+      "options": {
+        "dataLinks": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(round(increase(argocd_app_sync_total{namespace=~\"$namespace\",phase=~\"Error|Failed\",dest_server=~\"$cluster\"}[$interval]))) by ($grouping, phase)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{phase}}: {{$grouping}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Sync Failures",
+      "type": "timeseries",
+      "description": "Syncs fallidos por fase. Si crece junto con la duracion promedio, puede indicar problemas en manifests, permisos, API o repos."
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 9015,
+      "panels": [],
+      "title": "Clusters destino",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 90,
+      "options": {
+        "dataLinks": [],
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum by (name) (argocd_cluster_api_resource_objects{namespace=~\"$namespace\",server=~\"$cluster\"} * on(server) group_left(name) argocd_cluster_info)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{name}}",
+          "refId": "A",
+          "hide": false
+        }
+      ],
+      "title": "Resource Objects Count",
+      "type": "timeseries",
+      "description": "Cantidad de objetos Kubernetes conocidos por ArgoCD por cluster. Sirve para dimensionar escala; clusters con muchos objetos suelen costar mas de reconciliar."
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byValue",
+              "options": {
+                "op": "gte",
+                "reducer": "allIsNull",
+                "value": 0
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 23
+      },
+      "id": 92,
+      "options": {
+        "dataLinks": [],
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "sum by (name) (argocd_cluster_api_resources{namespace=~\"$namespace\",server=~\"$cluster\"} * on(server) group_left(name) argocd_cluster_info)",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{name}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "sum by (name) (argocd_cluster_api_resources{namespace=~\"$namespace\",server=~\"$cluster\"} * on(server) group_left(name) argocd_cluster_info)",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{name}}",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "API Resources Count",
+      "type": "timeseries",
+      "description": "Cantidad de tipos de recursos/API visibles por cluster. Util para comparar clusters o detectar problemas de discovery."
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 23
+      },
+      "id": 86,
+      "options": {
+        "dataLinks": [],
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "sum by (name) ((increase(argocd_cluster_events_total{namespace=~\"$namespace\",server=~\"$cluster\"}[$interval])) * on(server) group_left(name) argocd_cluster_info)",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{name}}",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Cluster Events Count",
+      "type": "timeseries",
+      "description": "Eventos generados por cluster. Es una senal de actividad o ruido; no mide salud directamente. Picos anormales pueden indicar loops o mucho churn."
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 9030,
+      "panels": [],
+      "title": "Saturacion y API Kubernetes",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 31
+      },
+      "id": 96,
+      "options": {
+        "dataLinks": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(workqueue_depth{namespace=~\"$namespace\",name=~\"app_.*\"}) by (name)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Workqueue Depth",
+      "type": "timeseries",
+      "description": "Items pendientes en colas internas del controller. Alto sostenido indica backlog: ArgoCD no alcanza a procesar todo al ritmo necesario."
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 31
+      },
+      "id": 98,
+      "options": {
+        "dataLinks": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(argocd_kubectl_exec_pending{namespace=~\"$namespace\"}) by (command)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{command}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Pending kubectl run",
+      "type": "timeseries",
+      "description": "Comandos kubectl pendientes. Si sube sostenidamente, puede haber lentitud contra Kubernetes o saturacion del controller."
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "id": 80,
+      "options": {
+        "dataLinks": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(increase(argocd_app_k8s_request_total{namespace=~\"$namespace\",server=~\"$cluster\"}[$interval])) by (verb, resource_kind)",
+          "format": "time_series",
+          "instant": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{verb}} {{resource_kind}}",
+          "refId": "A"
+        }
+      ],
+      "title": "K8s API Activity",
+      "type": "timeseries",
+      "description": "Requests de ArgoCD hacia la API Kubernetes por verbo y tipo de recurso. Picos o patrones raros pueden indicar loops, exceso de list/watch o presion sobre el API server."
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
+      "id": 9045,
+      "panels": [],
+      "title": "Git activity",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 46
+      },
+      "id": 82,
+      "options": {
+        "dataLinks": [],
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(increase(argocd_git_request_total{request_type=\"ls-remote\", namespace=~\"$namespace\"}[10m])) by (namespace)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{namespace}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Git Requests (ls-remote)",
+      "type": "timeseries",
+      "description": "Cantidad de consultas ls-remote a Git. Es actividad, no latencia. Picos indican que ArgoCD esta consultando repos con mas frecuencia."
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 46
+      },
+      "id": 84,
+      "options": {
+        "dataLinks": [],
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(increase(argocd_git_request_total{request_type=\"fetch\", namespace=~\"$namespace\"}[10m])) by (namespace)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{namespace}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Git Requests (checkout)",
+      "type": "timeseries",
+      "description": "Cantidad de fetch/checkout contra Git. Picos pueden indicar muchas apps refrescando, despliegues masivos o repos con mucho movimiento."
+    }
+  ],
+  "preload": false,
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "argocd",
+    "gitops"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "Internal Mimir",
+          "value": "prometheus"
+        },
+        "includeAll": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "$datasource",
+        "definition": "label_values(kube_pod_info, namespace)",
+        "includeAll": true,
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(kube_pod_info, namespace)",
+          "refId": "Prometheus-namespace-Variable-Query"
+        },
+        "refresh": 1,
+        "regex": ".*argocd.*",
+        "type": "query"
+      },
+      {
+        "auto": true,
+        "auto_count": 30,
+        "auto_min": "1m",
+        "current": {
+          "text": "$__auto",
+          "value": "$__auto"
+        },
+        "name": "interval",
+        "options": [
+          {
+            "selected": false,
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "selected": false,
+            "text": "5m",
+            "value": "5m"
+          },
+          {
+            "selected": false,
+            "text": "10m",
+            "value": "10m"
+          },
+          {
+            "selected": false,
+            "text": "30m",
+            "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
+          },
+          {
+            "selected": false,
+            "text": "2h",
+            "value": "2h"
+          },
+          {
+            "selected": false,
+            "text": "4h",
+            "value": "4h"
+          },
+          {
+            "selected": false,
+            "text": "8h",
+            "value": "8h"
+          }
+        ],
+        "query": "1m,5m,10m,30m,1h,2h,4h,8h",
+        "refresh": 2,
+        "type": "interval"
+      },
+      {
+        "current": {
+          "text": "namespace",
+          "value": "namespace"
+        },
+        "includeAll": false,
+        "name": "grouping",
+        "options": [
+          {
+            "selected": true,
+            "text": "namespace",
+            "value": "namespace"
+          },
+          {
+            "selected": false,
+            "text": "name",
+            "value": "name"
+          },
+          {
+            "selected": false,
+            "text": "project",
+            "value": "project"
+          }
+        ],
+        "query": "namespace,name,project",
+        "type": "custom"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "$datasource",
+        "definition": "label_values(argocd_cluster_info, server)",
+        "includeAll": true,
+        "name": "cluster",
+        "options": [],
+        "query": {
+          "query": "label_values(argocd_cluster_info, server)",
+          "refId": "Prometheus-cluster-Variable-Query"
+        },
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "$__all",
+          "value": "$__all"
+        },
+        "includeAll": true,
+        "name": "health_status",
+        "options": [
+          {
+            "selected": false,
+            "text": "Healthy",
+            "value": "Healthy"
+          },
+          {
+            "selected": false,
+            "text": "Progressing",
+            "value": "Progressing"
+          },
+          {
+            "selected": false,
+            "text": "Suspended",
+            "value": "Suspended"
+          },
+          {
+            "selected": false,
+            "text": "Missing",
+            "value": "Missing"
+          },
+          {
+            "selected": false,
+            "text": "Degraded",
+            "value": "Degraded"
+          },
+          {
+            "selected": false,
+            "text": "Unknown",
+            "value": "Unknown"
+          }
+        ],
+        "query": "Healthy,Progressing,Suspended,Missing,Degraded,Unknown",
+        "type": "custom"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "$__all",
+          "value": "$__all"
+        },
+        "includeAll": true,
+        "name": "sync_status",
+        "options": [
+          {
+            "selected": false,
+            "text": "Synced",
+            "value": "Synced"
+          },
+          {
+            "selected": false,
+            "text": "OutOfSync",
+            "value": "OutOfSync"
+          },
+          {
+            "selected": false,
+            "text": "Unknown",
+            "value": "Unknown"
+          }
+        ],
+        "query": "Synced,OutOfSync,Unknown",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "ArgoCD / 02 Platform Health",
+  "uid": "argocd-02-platform-health",
+  "version": 1
+}

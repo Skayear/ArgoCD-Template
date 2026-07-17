@@ -1,0 +1,26 @@
+{{- if .Values.enabled -}}
+{{- $kps := get .Values "kube-prometheus-stack" | default dict -}}
+{{- $prometheus := get $kps "prometheus" | default dict -}}
+{{- $spec := get $prometheus "prometheusSpec" | default dict -}}
+{{- $retention := get $spec "retention" | default "" -}}
+{{- $storageSpec := get $spec "storageSpec" | default dict -}}
+{{- $vct := get $storageSpec "volumeClaimTemplate" | default dict -}}
+{{- $vctSpec := get $vct "spec" | default dict -}}
+{{- $resources := get $vctSpec "resources" | default dict -}}
+{{- $requests := get $resources "requests" | default dict -}}
+{{- $storage := get $requests "storage" | default "" -}}
+{{- $hasEmptyDir := hasKey $storageSpec "emptyDir" -}}
+
+{{- if not $retention -}}
+{{- fail "catalog/prometheus-stack requiere definir `kube-prometheus-stack.prometheus.prometheusSpec.retention` desde el cliente." -}}
+{{- end -}}
+
+{{- if and (not $storage) (not $hasEmptyDir) -}}
+{{- fail "catalog/prometheus-stack requiere definir storage persistente (`prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage`) o ephemeral (`prometheus.prometheusSpec.storageSpec.emptyDir`) desde el cliente." -}}
+{{- end -}}
+
+{{- if and (.Values.externalSecrets.enabled | default false) (not .Values.externalSecrets.data) -}}
+{{- fail "externalSecrets.enabled=true pero no hay data definida" -}}
+{{- end -}}
+
+{{- end -}}

@@ -1,0 +1,78 @@
+{{- range .Values.applications }}
+{{- $config := $.Values.config -}}
+{{- $namePrefix := $config.appNamePrefix | default $config.projectName -}}
+{{- $releasePrefix := $config.releaseNamePrefix | default $config.projectName -}}
+{{- $sourceRepoURL := .sourceRepoURL | default $config.spec.source.repoURL -}}
+{{- $sourceTargetRevision := .sourceTargetRevision | default $config.spec.source.targetRevision -}}
+{{- $sourcePath := .sourcePath | default .path -}}
+{{- $sourceType := .sourceType | default "helm" -}}
+{{- $valuesObject := .valuesObject -}}
+{{- with .valuesObjectFile }}
+{{- $fileValues := required (printf "valuesObjectFile %s not found" .) ($.Files.Get .) | fromYaml -}}
+{{- $valuesObject = ($fileValues.valuesObject | default $fileValues) -}}
+{{- end }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ if $namePrefix }}{{ printf "%s-%s" $namePrefix .name | quote }}{{ else }}{{ .name | quote }}{{ end }}
+  namespace: argocd
+  {{- with .syncWave }}
+  annotations:
+    argocd.argoproj.io/sync-wave: {{ . | quote }}
+  {{- end }}
+  {{- $finalizers := .finalizers | default (list "resources-finalizer.argocd.argoproj.io") }}
+  finalizers:
+    {{- toYaml $finalizers | nindent 4 }}
+spec:
+  {{- with .ignoreDifferences }}
+  ignoreDifferences:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  destination:
+    namespace: {{ .namespace | default .name | quote }}
+    server: {{ .destinationServer | default $config.spec.destination.server | quote }}
+  project: {{ .project | default "default" | quote }}
+  source:
+    path: {{ $sourcePath | quote }}
+    repoURL: {{ $sourceRepoURL | quote }}
+    targetRevision: {{ $sourceTargetRevision | quote }}
+    {{- if eq $sourceType "helm" }}
+    helm:
+      releaseName: {{ if .releaseName }}{{ .releaseName }}{{ else if $releasePrefix }}{{ printf "%s-%s" $releasePrefix .name }}{{ else }}{{ .name }}{{ end }}
+      {{- with .helmSkipCrds }}
+      skipCrds: {{ . }}
+      {{- end }}
+      {{- with .valueFiles }}
+      valueFiles:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .parameters }}
+      parameters:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $valuesObject }}
+      valuesObject:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if eq $sourceType "directory" }}
+      {{- with .directory }}
+    directory:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if eq $sourceType "kustomize" }}
+      {{- with .kustomize }}
+    kustomize:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      {{- with .syncOptions }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+    automated:
+      prune: true
+      selfHeal: true
+---
+{{ end -}}

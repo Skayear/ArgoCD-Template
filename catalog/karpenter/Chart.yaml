@@ -1,0 +1,22 @@
+apiVersion: v2
+name: karpenter
+description: Helm wrapper chart for Karpenter controller
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: karpenter
+    version: 1.12.0
+    repository: oci://public.ecr.aws/karpenter
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - karpenter
+  - controller
+  - aws
+  - eks
+  - node-provisioning
+  - autoscaling
+  - infrastructure

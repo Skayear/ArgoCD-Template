@@ -1,0 +1,12 @@
+{{- if .Values.enabled -}}
+{{- $tempo := get .Values "tempo-distributed" | default dict -}}
+{{- $storage := get $tempo "storage" | default dict -}}
+{{- $trace := get $storage "trace" | default dict -}}
+{{- $backend := get $trace "backend" | default "" -}}
+{{- if not $backend -}}
+{{- fail "catalog/tempo requiere definir `tempo-distributed.storage.trace.backend` desde el cliente. Para `tempo-distributed` no se admite el default implícito `local`." -}}
+{{- end -}}
+{{- if eq $backend "local" -}}
+{{- fail "catalog/tempo no admite `tempo-distributed.storage.trace.backend=local` en despliegue distribuido. Definelo por cliente con un backend compartido, por ejemplo `s3`, `azure` o equivalente compatible." -}}
+{{- end -}}
+{{- end -}}

@@ -1,0 +1,5 @@
+{{/*
+Deprecated: application data persistence is rendered by app-pvc.yaml from
+.Values.app.persistence. This file is intentionally kept as a no-op to avoid
+rendering a second PVC with the same name.
+*/}}

@@ -1,0 +1,10 @@
+apiVersion: v2
+name: dew-secret-provider
+description: |
+  Helm chart que provisiona SecretProviderClass y ServiceAccount para integrar
+  pods de CCE con Huawei DEW/CSMS via el Secrets Store CSI driver.
+type: application
+version: 0.1.0
+
+maintainers:
+  - name: Equipo de Plataforma

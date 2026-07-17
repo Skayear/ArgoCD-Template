@@ -1,0 +1,133 @@
+enabled: false
+
+# Values passed to the kube-prometheus-stack subchart dependency.
+kube-prometheus-stack:
+
+  # On managed clusters, availability of these targets depends on the provider.
+  defaultRules:
+    rules:
+      etcd: false
+      kubeControllerManager: false
+      kubeSchedulerAlerting: false
+      kubeSchedulerRecording: false
+
+  kubeEtcd:
+    enabled: true
+
+  kubeControllerManager:
+    enabled: true
+
+  kubeScheduler:
+    enabled: true
+
+  # Grafana is split into catalog/grafana so it can be managed as a
+  # standalone visualization layer with multiple data sources.
+  grafana:
+    enabled: false
+
+  prometheus:
+    prometheusSpec:
+      externalLabels: {}
+      tsdb:
+        outOfOrderTimeWindow: 30m
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: "2"
+          memory: 3Gi
+      # Prometheus scrapea targets y Grafana consulta a Prometheus.
+      # Si mas adelante queremos reenviar estas metricas a un backend externo
+      # (por ejemplo Mimir, Grafana Cloud Metrics, AMP o cualquier remote_write
+      # compatible), se configura aqui.
+      #
+      # externalLabels:
+      #   cluster: internal
+      #   environment: test
+      #
+      # remoteWrite:
+      #   - url: https://metrics.example.com/api/v1/push
+      #     # La autenticacion real debe venir de un Secret o ExternalSecret.
+      #     basicAuth:
+      #       username:
+      #         name: prometheus-remote-write
+      #         key: username
+      #       password:
+      #         name: prometheus-remote-write
+      #         key: password
+      #     writeRelabelConfigs:
+      #       - action: replace
+      #         targetLabel: cluster
+      #         replacement: internal
+      #       - action: replace
+      #         targetLabel: environment
+      #         replacement: test
+      # La retencion y el storage quedan definidos por cliente.
+      # El wrapper falla si no se define al menos:
+      # - prometheus.prometheusSpec.retention
+      # - prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage
+
+  alertmanager:
+    enabled: true
+    alertmanagerSpec:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 250m
+          memory: 256Mi
+
+  prometheusOperator:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    admissionWebhooks:
+      patch:
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 150m
+            memory: 128Mi
+
+  kube-state-metrics:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 300m
+        memory: 256Mi
+
+  # The node-exporter subchart defaults are awkward for this EKS cluster:
+  # - default affinity excludes nodes that don't carry provider-specific labels
+  # - hostNetwork=true collides with the old monitoring stack already binding 9100
+  prometheus-node-exporter:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+    hostNetwork: false
+    # Tolerate all taints so the DaemonSet runs on every node regardless of
+    # custom node-group taints (spot, dedicated, etc.)
+    tolerations:
+      - operator: Exists
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/os
+                  operator: In
+                  values:
+                    - linux

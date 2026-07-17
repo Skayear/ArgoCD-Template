@@ -1,0 +1,19 @@
+{{- if and .Values.app.persistence .Values.app.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "vaultwarden.fullname" . }}-data
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "vaultwarden.labels" . | nindent 4 }}
+    app.kubernetes.io/component: app
+spec:
+  accessModes:
+    {{- toYaml .Values.app.persistence.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.app.persistence.size | quote }}
+  {{- with .Values.app.persistence.storageClassName }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+{{- end }}

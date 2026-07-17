@@ -1,0 +1,10 @@
+apiVersion: v2
+name: opentelemetry-demo
+description: OpenTelemetry Demo application for tracing tests
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: opentelemetry-demo
+    version: 0.40.4
+    repository: https://open-telemetry.github.io/opentelemetry-helm-charts

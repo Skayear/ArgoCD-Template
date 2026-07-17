@@ -1,0 +1,49 @@
+valuesObject:
+  sonarqube:
+    fullnameOverride: sonarqube
+    replicaCount: 1
+    image:
+      tag: 25.9.0.112764-community
+    jdbcOverwrite:
+      enable: true
+      jdbcUrl: jdbc:postgresql://sonarqube-postgres.<RDS_ENDPOINT>:5432/sonarqube
+      jdbcUsername: sonarqube_admin
+      jdbcSecretName: sonarqube
+      jdbcSecretPasswordKey: jdbc-password
+    sonarProperties:
+      sonar.jdbc.url: jdbc:postgresql://sonarqube-postgres.<RDS_ENDPOINT>:5432/sonarqube
+      sonar.jdbc.username: sonarqube_admin
+    postgresql:
+      enabled: false
+    service:
+      type: ClusterIP
+    ingress:
+      enabled: false
+    persistence:
+      enabled: true
+      size: 20Gi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 2Gi
+      limits:
+        cpu: 500m
+        memory: 4Gi
+        ephemeral-storage: 8Gi
+    startupProbe:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      failureThreshold: 24
+  externalSecrets:
+    enabled: true
+    secretStoreRef:
+      name: sonarqube-secret-store
+      kind: ClusterSecretStore
+    target:
+      name: sonarqube
+    data:
+      - secretKey: jdbc-password
+        remoteRef:
+          key: sonarqube/db
+          property: password
+    namespace: external-secrets

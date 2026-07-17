@@ -1,0 +1,8 @@
+valuesObject:
+  karpenter:
+    settings:
+      clusterName: example-cluster
+      interruptionQueue: Karpenter-example-cluster
+    serviceAccount:
+      create: true
+      name: karpenter

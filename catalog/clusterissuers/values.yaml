@@ -1,0 +1,25 @@
+clusterIssuers:
+  enabled: true
+  items:
+    - name: letsencrypt-prod
+      email: sre@example.com
+      server: https://acme-v02.api.letsencrypt.org/directory
+      privateKeySecretRef: letsencrypt-prod
+      dnsProvider: aws
+      region: us-east-1
+      iamRole: arn:aws:iam::111111111111:role/cert-manager-route53
+      serviceAccount: cert-manager
+
+# Azure DNS example (dnsProvider: azure):
+# clusterIssuers:
+#   enabled: true
+#   items:
+#     - name: letsencrypt-prod-azure
+#       email: sre@example.com
+#       server: https://acme-v02.api.letsencrypt.org/directory
+#       privateKeySecretRef: letsencrypt-prod-azure
+#       dnsProvider: azure
+#       hostedZoneName: example.com
+#       resourceGroupName: my-resource-group
+#       subscriptionID: 00000000-0000-0000-0000-000000000000
+#       clientID: 00000000-0000-0000-0000-000000000000

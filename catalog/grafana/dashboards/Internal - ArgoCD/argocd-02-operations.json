@@ -1,0 +1,802 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Vista diaria para responder si GitOps esta sano: aplicaciones, salud, sync, drift y fallos de sincronizacion.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 9000,
+      "panels": [],
+      "title": "Resumen ejecutivo",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "id": 94,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "count(count by (server) (argocd_cluster_info{namespace=~\"$namespace\"}))",
+          "format": "time_series",
+          "instant": false,
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "title": "Clusters",
+      "type": "stat",
+      "description": "Cantidad de clusters registrados en ArgoCD. Sirve para confirmar alcance del monitoreo y detectar cambios inesperados."
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "id": 75,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(argocd_app_info{namespace=~\"$namespace\",dest_server=~\"$cluster\",health_status=~\"$health_status\",sync_status=~\"$sync_status\"})",
+          "format": "time_series",
+          "instant": false,
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "title": "Applications",
+      "type": "stat",
+      "description": "Cantidad total de aplicaciones gestionadas por ArgoCD segun los filtros activos."
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "id": 107,
+      "maxDataPoints": 100,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "count(count by (repo) (argocd_app_info{namespace=~\"$namespace\"}))",
+          "format": "time_series",
+          "instant": false,
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "title": "Repositories",
+      "type": "stat",
+      "description": "Cantidad de repositorios declarados en aplicaciones ArgoCD. Sirve como contexto de escala."
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "id": 0,
+              "op": "=",
+              "text": "0",
+              "type": 1,
+              "value": "null"
+            }
+          ],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "id": 100,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto",
+        "text": {}
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(argocd_app_info{namespace=~\"$namespace\",dest_server=~\"$cluster\",operation!=\"\"})",
+          "format": "time_series",
+          "instant": true,
+          "intervalFactor": 1,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Operations",
+      "type": "gauge",
+      "description": "Aplicaciones con una operacion activa. Si queda alto o sostenido, puede indicar syncs trabados o procesos pendientes."
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 9005,
+      "panels": [],
+      "title": "Salud y drift",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
+      "id": 105,
+      "options": {
+        "dataLinks": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(argocd_app_info{namespace=~\"$namespace\",dest_server=~\"$cluster\",health_status=~\"$health_status\",sync_status=~\"$sync_status\",health_status!=\"\"}) by (health_status)",
+          "format": "time_series",
+          "instant": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{health_status}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Health Status",
+      "type": "timeseries",
+      "description": "Distribucion de aplicaciones por health_status. Degraded, Missing y Unknown requieren revision; Healthy es estado normal."
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      },
+      "id": 106,
+      "options": {
+        "dataLinks": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(argocd_app_info{namespace=~\"$namespace\",dest_server=~\"$cluster\",health_status=~\"$health_status\",sync_status=~\"$sync_status\",health_status!=\"\"}) by (sync_status)",
+          "format": "time_series",
+          "instant": false,
+          "intervalFactor": 1,
+          "legendFormat": "{{sync_status}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Sync Status",
+      "type": "timeseries",
+      "description": "Distribucion de aplicaciones por sync_status. OutOfSync indica drift entre Git y el cluster."
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 9013,
+      "panels": [],
+      "title": "Fallos de sync",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 73,
+      "options": {
+        "dataLinks": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(round(increase(argocd_app_sync_total{namespace=~\"$namespace\",phase=~\"Error|Failed\",dest_server=~\"$cluster\"}[$interval]))) by ($grouping, phase)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{phase}}: {{$grouping}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Sync Failures",
+      "type": "timeseries",
+      "description": "Sincronizaciones con phase Error o Failed. Un valor mayor a 0 indica fallos reales de aplicacion, permisos, manifests invalidos o conectividad."
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": 9021,
+      "panels": [],
+      "title": "Tablas accionables",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "description": "Lista accionable de apps con salud no normal. Priorizar Degraded, Missing y Unknown.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 22
+      },
+      "id": 9101,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(argocd_app_info{namespace=~\"$namespace\",dest_server=~\"$cluster\",health_status=~\"$health_status\",sync_status=~\"$sync_status\",health_status!~\"Healthy|Progressing\"}) by (project, name, exported_namespace, health_status) > 0",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Aplicaciones no saludables",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "description": "Lista accionable de apps con drift. OutOfSync significa que el estado real no coincide con Git.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 22
+      },
+      "id": 9102,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "sum(argocd_app_info{namespace=~\"$namespace\",dest_server=~\"$cluster\",health_status=~\"$health_status\",sync_status!=\"Synced\"}) by (project, name, exported_namespace, sync_status) > 0",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Aplicaciones OutOfSync",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "uid": "$datasource"
+      },
+      "description": "Ranking de aplicaciones con mas fallos de sync en 24h. Ideal para priorizar investigacion.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 9103,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "expr": "topk(10, sum(round(increase(argocd_app_sync_total{namespace=~\"$namespace\",dest_server=~\"$cluster\",phase=~\"Error|Failed\"}[24h]))) by (project, name, exported_namespace, phase))",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Top apps con fallos de sync (24h)",
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "argocd",
+    "gitops"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "Internal Mimir",
+          "value": "prometheus"
+        },
+        "includeAll": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "$datasource",
+        "definition": "label_values(kube_pod_info, namespace)",
+        "includeAll": true,
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(kube_pod_info, namespace)",
+          "refId": "Prometheus-namespace-Variable-Query"
+        },
+        "refresh": 1,
+        "regex": ".*argocd.*",
+        "type": "query"
+      },
+      {
+        "auto": true,
+        "auto_count": 30,
+        "auto_min": "1m",
+        "current": {
+          "text": "$__auto",
+          "value": "$__auto"
+        },
+        "name": "interval",
+        "options": [
+          {
+            "selected": false,
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "selected": false,
+            "text": "5m",
+            "value": "5m"
+          },
+          {
+            "selected": false,
+            "text": "10m",
+            "value": "10m"
+          },
+          {
+            "selected": false,
+            "text": "30m",
+            "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
+          },
+          {
+            "selected": false,
+            "text": "2h",
+            "value": "2h"
+          },
+          {
+            "selected": false,
+            "text": "4h",
+            "value": "4h"
+          },
+          {
+            "selected": false,
+            "text": "8h",
+            "value": "8h"
+          }
+        ],
+        "query": "1m,5m,10m,30m,1h,2h,4h,8h",
+        "refresh": 2,
+        "type": "interval"
+      },
+      {
+        "current": {
+          "text": "namespace",
+          "value": "namespace"
+        },
+        "includeAll": false,
+        "name": "grouping",
+        "options": [
+          {
+            "selected": true,
+            "text": "namespace",
+            "value": "namespace"
+          },
+          {
+            "selected": false,
+            "text": "name",
+            "value": "name"
+          },
+          {
+            "selected": false,
+            "text": "project",
+            "value": "project"
+          }
+        ],
+        "query": "namespace,name,project",
+        "type": "custom"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "$datasource",
+        "definition": "label_values(argocd_cluster_info, server)",
+        "includeAll": true,
+        "name": "cluster",
+        "options": [],
+        "query": {
+          "query": "label_values(argocd_cluster_info, server)",
+          "refId": "Prometheus-cluster-Variable-Query"
+        },
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "$__all",
+          "value": "$__all"
+        },
+        "includeAll": true,
+        "name": "health_status",
+        "options": [
+          {
+            "selected": false,
+            "text": "Healthy",
+            "value": "Healthy"
+          },
+          {
+            "selected": false,
+            "text": "Progressing",
+            "value": "Progressing"
+          },
+          {
+            "selected": false,
+            "text": "Suspended",
+            "value": "Suspended"
+          },
+          {
+            "selected": false,
+            "text": "Missing",
+            "value": "Missing"
+          },
+          {
+            "selected": false,
+            "text": "Degraded",
+            "value": "Degraded"
+          },
+          {
+            "selected": false,
+            "text": "Unknown",
+            "value": "Unknown"
+          }
+        ],
+        "query": "Healthy,Progressing,Suspended,Missing,Degraded,Unknown",
+        "type": "custom"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "$__all",
+          "value": "$__all"
+        },
+        "includeAll": true,
+        "name": "sync_status",
+        "options": [
+          {
+            "selected": false,
+            "text": "Synced",
+            "value": "Synced"
+          },
+          {
+            "selected": false,
+            "text": "OutOfSync",
+            "value": "OutOfSync"
+          },
+          {
+            "selected": false,
+            "text": "Unknown",
+            "value": "Unknown"
+          }
+        ],
+        "query": "Synced,OutOfSync,Unknown",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "ArgoCD / 01 Operations",
+  "uid": "argocd-operations",
+  "version": 1
+}

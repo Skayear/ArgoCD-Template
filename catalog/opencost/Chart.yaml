@@ -1,0 +1,20 @@
+apiVersion: v2
+name: opencost
+description: Helm chart that deploys OpenCost with reference defaults
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: opencost
+    condition: enabled
+    version: 2.5.23
+    repository: https://opencost.github.io/opencost-helm-chart
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - opencost
+  - kubernetes
+  - cost
+  - observability

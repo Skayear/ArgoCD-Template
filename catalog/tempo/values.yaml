@@ -1,0 +1,121 @@
+enabled: false
+
+tempo-distributed:
+  reportingEnabled: false
+  multitenancyEnabled: false
+
+  metaMonitoring:
+    serviceMonitor:
+      labels:
+        observability_stack: tempo
+      relabelings:
+        - action: replace
+          targetLabel: observability_stack
+          replacement: tempo
+
+  traces:
+    otlp:
+      grpc:
+        enabled: true
+      http:
+        enabled: true
+
+  serviceAccount:
+    name: ""
+    annotations: {}
+
+  # El backend de storage se define por cliente. No dejarlo en `local`
+  # para despliegues distribuidos.
+
+  tempo:
+    structuredConfig:
+      ingester:
+        lifecycler:
+          ring:
+            replication_factor: 1
+
+  ingester:
+    replicas: 1
+    persistence:
+      enabled: true
+      size: 10Gi
+    resources:
+      requests:
+        cpu: 300m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+
+  distributor:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 150m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    nodeSelector: {}
+    tolerations: []
+
+  compactor:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 150m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    nodeSelector: {}
+    tolerations: []
+
+  querier:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    nodeSelector: {}
+    tolerations: []
+
+  queryFrontend:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 300m
+        memory: 256Mi
+    nodeSelector: {}
+    tolerations: []
+
+  metricsGenerator:
+    enabled: false
+    nodeSelector: {}
+    tolerations: []
+
+  memcached:
+    enabled: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 150m
+        memory: 128Mi
+
+  gateway:
+    enabled: false
+    nodeSelector: {}
+    tolerations: []
+
+  minio:
+    enabled: false

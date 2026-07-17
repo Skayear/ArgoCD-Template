@@ -1,0 +1,17 @@
+aws:
+  kind: SecretStore
+  service: SecretsManager
+  region: ""
+  secretStoreName: ""
+  namespace: ""
+  serviceAccount:
+    name: ""
+    roleArn: ""
+  externalSecrets: 
+    - name: ""
+      refreshInterval: "1h"
+      creationPolicy: "Owner"
+      remoteRef: "" 
+      entries: 
+        - key: "" 
+          property: ""

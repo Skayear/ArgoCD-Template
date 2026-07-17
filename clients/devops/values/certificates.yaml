@@ -1,0 +1,12 @@
+valuesObject:
+  certificates:
+    enabled: true
+    items:
+      - name: sonarqube-internal-example-com
+        namespace: sonarqube
+        secretName: sonarqube-internal-example-com-tls
+        issuerRef:
+          name: letsencrypt-prod
+          kind: ClusterIssuer
+        dnsNames:
+          - sonarqube.internal.example.com

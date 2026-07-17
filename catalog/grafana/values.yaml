@@ -1,0 +1,100 @@
+enabled: false
+
+defaultDashboards:
+  enabled: true
+  path: dashboards/**/*.json
+  label: grafana_dashboard
+  labelValue: "1"
+  folderAnnotation: grafana_folder
+  targetDirectoryAnnotation: k8s-sidecar-target-directory
+
+# Values passed to the standalone Grafana subchart dependency.
+grafana:
+  replicas: 1
+
+  # Grafana usa un PVC ReadWriteOnce en este stack. Con un Deployment de una
+  # sola réplica, RollingUpdate puede dejar rollouts atascados al intentar
+  # crear un segundo pod antes de soltar el volumen actual.
+  deploymentStrategy:
+    type: Recreate
+
+  service:
+    type: ClusterIP
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  persistence:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: 30Gi
+
+  grafana.ini:
+    date_formats:
+      # Mantenerlo aquí permite sobreescribirlo por cliente sin hardcodearlo.
+      default_timezone: browser
+
+    smtp:
+      enabled: true
+      host: email-smtp.us-east-1.amazonaws.com:587
+      user: $__env{GRAFANA_SMTP_USER}
+      password: $__env{GRAFANA_SMTP_PASSWORD}
+      from_address: sre@example.com
+      from_name: Grafana Internal
+      startTLS_policy: MandatoryStartTLS
+
+  # These sidecars let us add dashboards and datasources incrementally
+  # without baking environment-specific definitions into the base chart.
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      folderAnnotation: grafana_folder
+      provider:
+        foldersFromFilesStructure: true
+      searchNamespace: ALL
+    datasources:
+      enabled: true
+      searchNamespace: ALL
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 150m
+        memory: 128Mi
+
+  serviceMonitor:
+    enabled: false
+
+  testFramework:
+    enabled: false
+
+  admin:
+    existingSecret: ""
+
+  envFromSecret: ""
+
+# Optional ExternalSecret to expose sensitive Grafana runtime values, such as
+# alerting webhook URLs, without committing them in Git.
+externalSecrets:
+  enabled: false
+  refreshInterval: 1h
+  secretStoreRef:
+    name: ""
+    kind: ClusterSecretStore
+  target:
+    name: grafana-runtime-secrets
+    creationPolicy: Owner
+  data: []
+
+  datasources: {}
+  dashboardProviders: {}
+  dashboards: {}

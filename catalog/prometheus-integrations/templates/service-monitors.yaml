@@ -1,0 +1,51 @@
+{{- if and .Values.enabled .Values.serviceMonitors.items }}
+{{- $commonMetricRelabelings := .Values.serviceMonitors.commonMetricRelabelings | default list }}
+{{- range $item := .Values.serviceMonitors.items }}
+{{- $alloyMetricRelabelings := ternary ($.Values.serviceMonitors.alloyMetricRelabelings | default list) list (hasPrefix "alloy-" $item.name) }}
+{{- $matchLabels := dig "selector" "matchLabels" nil $item }}
+{{- $endpoints := required "serviceMonitors.items[].endpoints is required" $item.endpoints }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ required "serviceMonitors.items[].name is required" $item.name }}
+  namespace: {{ $item.namespace | default $.Release.Namespace }}
+  {{- if or $.Values.serviceMonitors.commonLabels $item.labels }}
+  labels:
+    {{- with $.Values.serviceMonitors.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with $item.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  {{- with $item.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ $item.targetNamespace | default $.Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- toYaml (required "serviceMonitors.items[].selector.matchLabels is required" $matchLabels) | nindent 6 }}
+  endpoints:
+    {{- range $endpoint := $endpoints }}
+    {{- $endpointMetricRelabelings := $endpoint.metricRelabelings | default list }}
+    {{- $mergedEndpoint := omit $endpoint "metricRelabelings" }}
+    {{- $metricRelabelings := concat $commonMetricRelabelings $alloyMetricRelabelings $endpointMetricRelabelings }}
+    {{- if $metricRelabelings }}
+    {{- $_ := set $mergedEndpoint "metricRelabelings" $metricRelabelings }}
+    {{- end }}
+    {{- toYaml (list $mergedEndpoint) | nindent 4 }}
+    {{- end }}
+  {{- with $item.jobLabel }}
+  jobLabel: {{ . }}
+  {{- end }}
+  {{- with $item.targetLabels }}
+  targetLabels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}

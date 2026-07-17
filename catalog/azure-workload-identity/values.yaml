@@ -1,0 +1,3 @@
+# Values passed to the workload-identity-webhook subchart dependency (alias: azure-workload-identity)
+azure-workload-identity:
+  azureTenantID: ""

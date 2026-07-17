@@ -1,0 +1,5 @@
+dnsEndpoints:
+  enabled: true
+  annotations: {}
+  labels: {}
+  items: []

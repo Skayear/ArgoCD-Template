@@ -1,0 +1,33 @@
+namespace: whoami
+
+replicaCount: 2
+
+image:
+  repository: traefik/whoami
+  tag: v1.10.2
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+securityContext:
+  pod:
+    runAsNonRoot: false
+    seccompProfile:
+      type: RuntimeDefault
+  container:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL

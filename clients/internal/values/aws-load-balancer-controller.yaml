@@ -1,0 +1,10 @@
+valuesObject:
+  aws-load-balancer-controller:
+    clusterName: example-cluster
+    vpcId: vpc-00000000000000000
+    serviceAccount:
+      create: true
+      name: aws-load-balancer-controller
+      annotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::111111111111:role/aws-load-balancer-controller-irsa
+    enableCertManager: false

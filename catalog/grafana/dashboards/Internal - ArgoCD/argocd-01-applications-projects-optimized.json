@@ -1,0 +1,506 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 0,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 9001,
+      "panels": [],
+      "title": "Current State",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Cantidad actual de aplicaciones no saludables.\n\nMuestra apps con estados distintos de Healthy o Progressing.\n\nUso operacional:\nDebe permanecer en OK.\nSi aparece un número mayor a 0, revisar inmediatamente la tabla inferior para identificar qué aplicación está degradada o caída.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "text": "OK"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "expr": "\nsum(\n  argocd_app_info{\n    namespace=~\"$namespace\",\n    dest_server=~\"$cluster\",\n    project=~\"$project\",\n    health_status!~\"Healthy|Progressing\"\n  }\n) or vector(0)\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Current Unhealthy Applications",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Cantidad actual de aplicaciones OutOfSync.\n\nOutOfSync significa que Git y Kubernetes no coinciden.\n\nUso operacional:\nNo necesariamente implica caída, pero sí drift o cambios pendientes.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "text": "OK"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "expr": "\nsum(\n  argocd_app_info{\n    namespace=~\"$namespace\",\n    dest_server=~\"$cluster\",\n    project=~\"$project\",\n    sync_status!=\"Synced\"\n  }\n) or vector(0)\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Current OutOfSync Applications",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Aplicaciones que estuvieron no saludables durante las últimas 24 horas.\n\nEste panel muestra aplicaciones que en algún momento del período seleccionado tuvieron un health_status distinto de Healthy o Progressing.\n\nEstados considerados problemáticos:\n- Degraded: la aplicación o alguno de sus recursos está en mal estado\n- Missing: ArgoCD esperaba recursos que no existen en el cluster\n- Unknown: ArgoCD no pudo determinar correctamente la salud\n- Suspended: la aplicación está pausada o detenida\n\nUso operacional:\nSirve para detectar incidentes recientes aunque la aplicación ya se haya recuperado.\n\nEste panel responde:\n- qué aplicación estuvo afectada\n- en qué proyecto ocurrió\n- en qué namespace estaba\n- qué estado problemático tuvo\n\nImportante:\nNo representa necesariamente el estado actual.\nPara saber si una app sigue caída ahora, revisar el panel de estado actual.\n\nSi este panel muestra datos pero el panel actual está en OK, significa que hubo una degradación o caída reciente que ya se recuperó.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 9002,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (project, name, exported_namespace, health_status, sync_status) (\n  max_over_time(\n    argocd_app_info{\n      namespace=~\"$namespace\",\n      dest_server=~\"$cluster\",\n      project=~\"$project\",\n      health_status!~\"Healthy|Progressing\"\n    }[24h]\n  )\n) > 0",
+          "legendFormat": "{{name}} - {{health_status}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Applications Unhealthy History - Last 24h",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Tabla de aplicaciones actualmente no saludables.\n\nUso operacional:\nEsta es la tabla principal de acción inmediata.\nMuestra qué app está afectada, en qué proyecto y cuál es su estado actual.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "\nsum(\n  argocd_app_info{\n    namespace=~\"$namespace\",\n    dest_server=~\"$cluster\",\n    project=~\"$project\",\n    health_status!~\"Healthy|Progressing\"\n  }\n) by (\n  project,\n  name,\n  exported_namespace,\n  health_status,\n  sync_status\n) > 0",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Unhealthy Applications - Current Details",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true
+            },
+            "renameByName": {
+              "exported_namespace": "namespace_app",
+              "health_status": "salud",
+              "name": "aplicacion",
+              "project": "proyecto",
+              "sync_status": "sync"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "argocd",
+    "gitops",
+    "health"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "Internal Mimir",
+          "value": "prometheus"
+        },
+        "label": "Métrica",
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "text": [
+            "argocd"
+          ],
+          "value": [
+            "argocd"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(argocd_app_info, namespace)",
+        "includeAll": true,
+        "label": "Namespace",
+        "multi": true,
+        "name": "namespace",
+        "options": [
+          {
+            "selected": true,
+            "text": "argocd",
+            "value": "argocd"
+          }
+        ],
+        "query": "label_values(argocd_app_info, namespace)",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(argocd_app_info, dest_server)",
+        "includeAll": true,
+        "label": "Cluster destino",
+        "multi": true,
+        "name": "cluster",
+        "options": [
+          {
+            "selected": false,
+            "text": "https://7C1DADF0916DA54A5B148B4748111CA1.gr7.us-east-1.eks.amazonaws.com",
+            "value": "https://7C1DADF0916DA54A5B148B4748111CA1.gr7.us-east-1.eks.amazonaws.com"
+          },
+          {
+            "selected": false,
+            "text": "https://A101403118CE1FE4478A28F693489330.gr7.us-east-1.eks.amazonaws.com",
+            "value": "https://A101403118CE1FE4478A28F693489330.gr7.us-east-1.eks.amazonaws.com"
+          },
+          {
+            "selected": false,
+            "text": "https://C81A3E286746FCBD49FB6411B3F9A929.gr7.us-east-1.eks.amazonaws.com",
+            "value": "https://C81A3E286746FCBD49FB6411B3F9A929.gr7.us-east-1.eks.amazonaws.com"
+          },
+          {
+            "selected": false,
+            "text": "https://kubernetes.default.svc",
+            "value": "https://kubernetes.default.svc"
+          }
+        ],
+        "query": "label_values(argocd_app_info, dest_server)",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(argocd_app_info, project)",
+        "includeAll": true,
+        "label": "Proyecto",
+        "multi": true,
+        "name": "project",
+        "options": [
+          {
+            "selected": false,
+            "text": "default",
+            "value": "default"
+          },
+          {
+            "selected": false,
+            "text": "devops",
+            "value": "devops"
+          },
+          {
+            "selected": false,
+            "text": "example-app",
+            "value": "example-app"
+          },
+          {
+            "selected": false,
+            "text": "example-app-qa",
+            "value": "example-app-qa"
+          },
+          {
+            "selected": false,
+            "text": "example-app-2",
+            "value": "example-app-2"
+          },
+          {
+            "selected": false,
+            "text": "internal",
+            "value": "internal"
+          }
+        ],
+        "query": "label_values(argocd_app_info, project)",
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "ArgoCD / Application Health Timeline",
+  "uid": "argocd-app-health-timeline",
+  "version": 5
+}

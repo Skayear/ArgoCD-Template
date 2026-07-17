@@ -1,0 +1,15 @@
+apiVersion: v2
+name: certificates
+description: Helm chart that creates cert-manager Certificate resources
+type: application
+version: 0.1.0
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - cert-manager
+  - certificate
+  - tls
+  - acme
+  - letsencrypt

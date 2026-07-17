@@ -1,0 +1,12 @@
+valuesObject:
+  clusterIssuers:
+    enabled: true
+    items:
+      - name: letsencrypt-prod
+        email: sre@example.com
+        server: https://acme-v02.api.letsencrypt.org/directory
+        privateKeySecretRef: letsencrypt-prod
+        dnsProvider: aws
+        region: us-east-1
+        iamRole: arn:aws:iam::111111111111:role/cert-manager-route53
+        serviceAccount: cert-manager

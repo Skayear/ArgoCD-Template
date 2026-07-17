@@ -1,0 +1,54 @@
+valuesObject:
+  clusters:
+    enabled: true
+    items:
+      # Patrón recomendado: credenciales del cluster remoto vía ExternalSecret,
+      # nunca en texto plano en este archivo. El secret referenciado debe contener
+      # el bloque `config` completo (server, tlsClientConfig, awsAuthConfig o
+      # execProviderConfig) en el formato que espera argocd-clusters.
+      - name: admin-example-app-dev
+        server: https://<EKS_CLUSTER_ENDPOINT>.gr7.us-east-1.eks.amazonaws.com
+        project: example-app-dev
+        externalSecret:
+          secretStoreRef:
+            name: argocd-secret-store
+            kind: ClusterSecretStore
+          secretKey: argocd/clusters/example-app-dev
+          property: config
+
+      # Alternativa estática para clusters EKS en la misma cuenta AWS donde
+      # corre Argo CD (auth via IRSA, sin secrets adicionales). Reemplazar
+      # <...> por los valores reales del cluster antes de aplicar.
+      - name: admin-example-app-qa
+        server: https://<EKS_CLUSTER_ENDPOINT>.gr7.us-east-1.eks.amazonaws.com
+        project: example-app-qa
+        config:
+          awsAuthConfig:
+            clusterName: example-app-eks-qa
+            roleARN: arn:aws:iam::<AWS_ACCOUNT_ID>:role/argo-example-app-qa-cluster
+          tlsClientConfig:
+            insecure: false
+            caData: <BASE64_CLUSTER_CA_CERTIFICATE>
+
+      # Alternativa para clusters fuera de AWS (ej. AKS) autenticando con un
+      # Service Principal de Azure AD. IMPORTANTE: no pongas el client secret
+      # en texto plano acá — usá `externalSecret` como en el primer ejemplo,
+      # o un ExternalSecret aparte que inyecte AZURE_CLIENT_SECRET en runtime.
+      - name: admin-example-app-aks
+        server: https://<AKS_CLUSTER_ENDPOINT>.hcp.<region>.azmk8s.io
+        project: example-app-aks
+        config:
+          execProviderConfig:
+            command: argocd-k8s-auth
+            env:
+              AAD_ENVIRONMENT_NAME: AzurePublicCloud
+              AZURE_CLIENT_ID: <AZURE_CLIENT_ID>
+              AZURE_CLIENT_SECRET: <AZURE_CLIENT_SECRET_FROM_EXTERNAL_SECRET>
+              AZURE_TENANT_ID: <AZURE_TENANT_ID>
+              AAD_LOGIN_METHOD: spn
+            args:
+              - azure
+            apiVersion: client.authentication.k8s.io/v1beta1
+          tlsClientConfig:
+            insecure: false
+            caData: <BASE64_CLUSTER_CA_CERTIFICATE>

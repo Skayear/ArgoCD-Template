@@ -1,0 +1,17 @@
+enabled: false
+
+prometheus-postgres-exporter:
+  serviceMonitor:
+    enabled: false
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}

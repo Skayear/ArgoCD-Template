@@ -1,0 +1,170 @@
+enabled: false
+
+mimir-distributed:
+  metaMonitoring:
+    serviceMonitor:
+      labels:
+        observability_stack: mimir
+      relabelings:
+        - action: replace
+          targetLabel: observability_stack
+          replacement: mimir
+
+  serviceAccount:
+    name: ""
+    annotations: {}
+
+  # Mimir central para soporte. Dejamos la base chica y sin atarla a un cloud.
+  minio:
+    enabled: false
+
+  kafka:
+    enabled: false
+
+  rollout_operator:
+    enabled: false
+
+  overrides_exporter:
+    enabled: false
+
+  alertmanager:
+    enabled: false
+
+  ruler:
+    enabled: false
+
+  gateway:
+    enabled: true
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 300m
+        memory: 256Mi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+  distributor:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+  ingester:
+    replicas: 1
+    zoneAwareReplication:
+      enabled: false
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+  querier:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+  query_frontend:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 300m
+        memory: 256Mi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+  query_scheduler:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+  store_gateway:
+    replicas: 1
+    zoneAwareReplication:
+      enabled: false
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+  compactor:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+  chunks-cache:
+    enabled: false
+
+  index-cache:
+    enabled: false
+
+  metadata-cache:
+    enabled: false
+
+  results-cache:
+    enabled: false
+
+  mimir:
+    structuredConfig:
+      multitenancy_enabled: true
+      ingest_storage:
+        enabled: false
+      ingester:
+        push_grpc_method_enabled: true
+        ring:
+          replication_factor: 1
+      limits:
+        out_of_order_time_window: 30m
+      common:
+        storage:
+          backend: ""

@@ -1,0 +1,8 @@
+apiVersion: v2
+name: blackbox-sinteticos
+description: Reglas de alerta para probes sinteticos blackbox
+type: application
+version: 0.1.0
+
+maintainers:
+  - name: Equipo de Plataforma

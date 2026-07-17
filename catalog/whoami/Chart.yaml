@@ -1,0 +1,9 @@
+apiVersion: v2
+name: whoami
+description: Helm chart for deploying whoami service
+type: application
+version: 0.1.0
+appVersion: "v1.10.2"
+
+maintainers:
+  - name: Equipo de Plataforma

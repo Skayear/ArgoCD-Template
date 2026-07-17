@@ -1,0 +1,33 @@
+enabled: false
+
+# Values passed to the external-dns subchart dependency
+external-dns:
+  sources:
+    - service
+    - crd
+
+  managedRecordTypes:
+    - A
+    - CNAME
+
+  policy: upsert-only
+  registry: txt
+  txtOwnerId: ""
+
+  serviceAccount:
+    create: true
+    name: external-dns
+    annotations: {}
+    labels: {}
+
+  podLabels: {}
+
+  extraArgs:
+    crd-source-apiversion: externaldns.k8s.io/v1alpha1
+    crd-source-kind: DNSEndpoint
+
+  extraVolumes: []
+  extraVolumeMounts: []
+  env: []
+
+  triggerLoopOnEvent: true

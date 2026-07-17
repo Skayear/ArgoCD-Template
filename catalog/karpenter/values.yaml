@@ -1,0 +1,2 @@
+# Values passed to the karpenter subchart dependency
+karpenter: {}

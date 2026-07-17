@@ -1,0 +1,165 @@
+global:
+  domain: argocd.internal.example.com
+
+server:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  service:
+    type: ClusterIP
+
+  ingress:
+    enabled: false
+
+  podLabels:
+    azure.workload.identity/use: "true"
+
+  serviceAccount:
+    annotations:
+      azure.workload.identity/client-id: "11111111-1111-1111-1111-111111111111"
+      eks.amazonaws.com/role-arn: arn:aws:iam::111111111111:role/internal-argocd-management-cluster-access
+  metrics:
+    enabled: true
+
+configs:
+  cm:
+    url: https://argocd.internal.example.com
+    admin.enabled: "false"
+    exec.enabled: "false"
+    users.anonymous.enabled: "false"
+    oidc.config: |
+      name: Azure
+      issuer: https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000/v2.0
+      clientID: 11111111-1111-1111-1111-111111111111
+      azure:
+        useWorkloadIdentity: true
+      requestedIDTokenClaims:
+        groups:
+          essential: true
+          value: "SecurityGroup"
+      requestedScopes:
+        - openid
+        - profile
+        - email
+    resource.customizations.health.apiextensions.k8s.io_CustomResourceDefinition:
+      |
+      hs = {}
+
+      if obj.status == nil or obj.status.conditions == nil then
+        hs.status = "Progressing"
+        hs.message = "Waiting for CRD status"
+        return hs
+      end
+
+      local established = false
+
+      for _, condition in ipairs(obj.status.conditions) do
+        if condition.type == "Established" and condition.status == "True" then
+          established = true
+        end
+
+        if condition.type == "Terminating" and condition.status == "True" then
+          hs.status = "Degraded"
+          hs.message = condition.message or "CRD is terminating"
+          return hs
+        end
+
+        if condition.type == "NamesAccepted" and condition.status == "False" and condition.reason ~= "SingularConflict" then
+          hs.status = "Degraded"
+          hs.message = condition.message or "CRD names were not accepted"
+          return hs
+        end
+      end
+
+      if established then
+        hs.status = "Healthy"
+        hs.message = "CRD is established"
+        return hs
+      end
+
+      hs.status = "Progressing"
+      hs.message = "Waiting for CRD to be established"
+      return hs
+  rbac:
+    policy.default: role:no-access
+    scopes: "[groups, email]"
+    # p, <role/user/group>, <resource>, <action>, <object>, <effect>
+    # g, <user/group>, <role>
+    policy.csv: |
+      p, role:admin, *, *, *, allow
+
+      # Un bloque de 5 reglas por proyecto (get/sync applications, get project,
+      # get logs, create exec) le da a role:team-developer acceso de desarrollo
+      # normal sobre ese proyecto. Duplicar este bloque por cada proyecto nuevo
+      # (uno por cliente/ambiente, ver clients/devops/values/projects.yaml).
+      p, role:team-developer, applications, get, example-app-dev/*, allow
+      p, role:team-developer, applications, sync, example-app-dev/*, allow
+      p, role:team-developer, projects, get, example-app-dev, allow
+      p, role:team-developer, logs, get, example-app-dev/*, allow
+      p, role:team-developer, exec, create, example-app-dev/*, allow
+
+      p, role:team-developer, applications, get, example-app-qa/*, allow
+      p, role:team-developer, applications, sync, example-app-qa/*, allow
+      p, role:team-developer, projects, get, example-app-qa, allow
+      p, role:team-developer, logs, get, example-app-qa/*, allow
+      p, role:team-developer, exec, create, example-app-qa/*, allow
+
+      # Mapeo de grupos de Azure AD (Entra ID) a roles de Argo CD. El valor de
+      # cada `g` es el Object ID del grupo de seguridad en Entra ID, no su
+      # nombre. Reemplazar por los Object ID reales de cada grupo.
+      g, "<AZURE_AD_GROUP_OBJECT_ID_DEV_TEAM>", role:team-developer
+      g, "<AZURE_AD_GROUP_OBJECT_ID_ADMINS>", role:admin
+
+  params:
+    server.insecure: "true"
+
+controller:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "1"
+      memory: 2Gi
+  metrics:
+    enabled: true
+
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::111111111111:role/internal-argocd-management-cluster-access
+
+repoServer:
+  resources:
+    requests:
+      cpu: 300m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  metrics:
+    enabled: true
+
+applicationSet:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+  metrics:
+    enabled: true
+
+redis:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi

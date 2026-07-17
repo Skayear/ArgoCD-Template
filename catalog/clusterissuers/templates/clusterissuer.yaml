@@ -1,0 +1,49 @@
+{{- if .Values.clusterIssuers.enabled }}
+{{- range .Values.clusterIssuers.items }}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ .name | quote }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  acme:
+    email: {{ .email | quote }}
+    server: {{ .server | quote }}
+    privateKeySecretRef:
+      name: {{ .privateKeySecretRef | quote }}
+    solvers:
+{{- if eq .dnsProvider "azure" }}
+      - dns01:
+          azureDNS:
+            hostedZoneName: {{ .hostedZoneName | quote }}
+            resourceGroupName: {{ .resourceGroupName | quote }}
+            subscriptionID: {{ .subscriptionID | quote }}
+            environment: AzurePublicCloud
+            managedIdentity:
+              clientID: {{ .clientID | quote }}
+{{- else if eq .dnsProvider "aws" }}
+  {{- if .iamRole }}
+      - dns01:
+          route53:
+            region: {{ .region | quote }}
+            role: {{ .iamRole | quote }}
+            auth:
+              kubernetes:
+                serviceAccountRef:
+                  name: {{ .serviceAccount | quote }}
+  {{- else }}
+      - dns01:
+          route53:
+            region: {{ .region | quote }}
+            accessKeyID: {{ .accessKeyID | quote }}
+            secretAccessKeySecretRef:
+              name: {{ .credentialsSecretName | quote }}
+              key: secret-access-key
+  {{- end }}
+{{- else }}
+{{- fail (printf "dnsProvider must be 'azure' or 'aws' for ClusterIssuer %s" .name) }}
+{{- end }}
+---
+{{- end }}
+{{- end }}

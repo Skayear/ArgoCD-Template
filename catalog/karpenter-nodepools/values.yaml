@@ -1,0 +1,7 @@
+nodePools:
+  enabled: false
+  items: []
+ec2NodeClasses:
+  enabled: false
+  items: []
+

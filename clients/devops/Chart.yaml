@@ -1,0 +1,8 @@
+apiVersion: v2
+name: devops
+description: App of Apps chart that instantiates critical DevOps applications
+type: application
+version: 0.1.0
+
+maintainers:
+  - name: Equipo de Plataforma

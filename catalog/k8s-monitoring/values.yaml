@@ -1,0 +1,116 @@
+enabled: false
+
+k8s-monitoring:
+  cluster:
+    # Se define por cliente para evitar hardcodes de cluster en el catalog.
+    name: ""
+
+  # El backend real se define por cliente. El chart base no asume AWS/Azure/Huawei.
+  destinations: []
+
+  # Primera pasada util: recolectar logs de pods y eventos del cluster hacia Loki.
+  podLogs:
+    enabled: true
+    destinations: []
+
+  clusterEvents:
+    enabled: true
+    destinations: []
+
+  # Se deja apagado por ahora hasta definir la arquitectura final de metricas
+  # y traces centralizadas para aplicaciones.
+  applicationObservability:
+    enabled: false
+    metrics:
+      transforms:
+        resource:
+          - replace_all_patterns(attributes, "key", "\\.", "_")
+        metric:
+          - replace_pattern(name, "[^a-zA-Z0-9_:]", "_")
+        datapoint:
+          - replace_all_patterns(attributes, "key", "\\.", "_")
+    connectors:
+      spanMetrics:
+        transforms:
+          resource:
+            - replace_all_patterns(attributes, "key", "\\.", "_")
+          metric:
+            - replace_pattern(name, "[^a-zA-Z0-9_:]", "_")
+          datapoint:
+            - replace_all_patterns(attributes, "key", "\\.", "_")
+    receivers: {}
+
+  clusterMetrics:
+    enabled: false
+    destinations: []
+
+  nodeLogs:
+    enabled: false
+    destinations: []
+
+  alloy-logs:
+    enabled: true
+    alloy:
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+    controller:
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
+
+  alloy-singleton:
+    enabled: true
+    alloy:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 300m
+          memory: 256Mi
+    controller:
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
+
+  alloy-receiver:
+    enabled: false
+    alloy:
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      extraPorts: []
+    controller:
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
+  alloy-metrics:
+    enabled: false
+    controller:
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}
+
+  alloy-operator:
+    deploy: true
+    # resources:
+    #   requests:
+    #     cpu: 100m
+    #     memory: 128Mi
+    #   limits:
+    #     cpu: 250m
+    #     memory: 256Mi
+    nodeSelector: {}
+    tolerations: []
+
+  selfReporting:
+    enabled: false

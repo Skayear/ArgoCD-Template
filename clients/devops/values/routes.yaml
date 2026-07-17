@@ -1,0 +1,27 @@
+valuesObject:
+  routes:
+    enabled: true
+    items:
+      - name: sonarqube-route
+        namespace: sonarqube
+        ingressClassName: apisix
+        hosts:
+          - sonarqube.internal.example.com
+        paths:
+          - /*
+        backend:
+          serviceName: sonarqube
+          servicePort: 9000
+          resolveGranularity: service
+
+  tls:
+    enabled: true
+    items:
+      - name: sonarqube-apisixtls-tls
+        namespace: sonarqube
+        ingressClassName: apisix
+        hosts:
+          - sonarqube.internal.example.com
+        secret:
+          name: sonarqube-internal-example-com-tls
+          namespace: sonarqube

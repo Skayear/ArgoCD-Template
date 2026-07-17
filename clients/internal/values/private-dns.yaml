@@ -1,0 +1,25 @@
+valuesObject:
+  enabled: true
+  external-dns:
+    nodeSelector:
+      karpenter.sh/nodepool: karpenter-on-demand
+    tolerations:
+      - key: workload.example/nodepool
+        operator: Equal
+        value: karpenter-general
+        effect: NoSchedule
+    sources:
+      - service
+      - crd
+    provider:
+      name: aws
+    domainFilters:
+      - internal.example.com
+    txtOwnerId: example-cluster-private
+    serviceAccount:
+      name: internal-private-dns
+      annotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::111111111111:role/internal-private-dns-route53
+    extraArgs:
+      aws-zone-type: private
+      annotation-filter: external-dns.alpha.kubernetes.io/access=private

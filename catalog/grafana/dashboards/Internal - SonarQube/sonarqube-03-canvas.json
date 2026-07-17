@@ -1,0 +1,930 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations y Alertas",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "SonarQube: vista Canvas con metricas de infraestructura del nodo (node-exporter) y estado del pod (kube-state-metrics). Unico panel tipo Canvas con layout de diagrama.",
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Canvas de monitoreo de SonarQube. Muestra estado del pod y metricas del nodo donde corre sonarqube-0. Las queries de node-exporter usan un join dinamico con kube_pod_info para seguir al pod si cambia de nodo.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red",   "value": 80 }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "pod_ready" },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "red",   "value": null },
+                    { "color": "green", "value": 1 }
+                  ]
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "0": { "color": "red",   "index": 0, "text": "DOWN" },
+                      "1": { "color": "green", "index": 1, "text": "UP"   }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "restarts" },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green",  "value": null },
+                    { "color": "yellow", "value": 1    },
+                    { "color": "red",    "value": 5    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "cpu_pct" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green",  "value": null },
+                    { "color": "yellow", "value": 60   },
+                    { "color": "red",    "value": 80   }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "mem_pct" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green",  "value": null },
+                    { "color": "yellow", "value": 70   },
+                    { "color": "red",    "value": 85   }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "disk_pct" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green",  "value": null },
+                    { "color": "yellow", "value": 70   },
+                    { "color": "red",    "value": 85   }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "net_rx" },
+            "properties": [
+              { "id": "unit", "value": "Bps" },
+              { "id": "color", "value": { "fixed": "#3d85c8", "mode": "fixed" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "net_tx" },
+            "properties": [
+              { "id": "unit", "value": "Bps" },
+              { "id": "color", "value": { "fixed": "#3d85c8", "mode": "fixed" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "load1" },
+            "properties": [
+              { "id": "unit", "value": "short" },
+              { "id": "color", "value": { "fixed": "#f0a500", "mode": "fixed" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "load5" },
+            "properties": [
+              { "id": "unit", "value": "short" },
+              { "id": "color", "value": { "fixed": "#f0a500", "mode": "fixed" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "load15" },
+            "properties": [
+              { "id": "unit", "value": "short" },
+              { "id": "color", "value": { "fixed": "#f0a500", "mode": "fixed" } }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 24, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "inlineEditing": false,
+        "root": {
+          "background": { "color": { "fixed": "transparent" } },
+          "border":     { "color": { "fixed": "dark-green" }, "width": 0 },
+          "constraint": { "horizontal": "left", "vertical": "top" },
+          "name": "root",
+          "placement": { "height": 100, "left": 0, "top": 0, "width": 100 },
+          "type": "frame",
+          "elements": [
+
+            {
+              "type": "text",
+              "name": "header_bg",
+              "background": { "color": { "fixed": "#1a1a2e" } },
+              "border":     { "color": { "fixed": "#3d85c8" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 40, "left": 0, "top": 0, "width": 790 },
+              "config": {
+                "align": "left",
+                "color": { "fixed": "#ffffff" },
+                "size": 15,
+                "text": { "fixed": "  SonarQube  ·  sonarqube-0  ·  ns: sonarqube  ·  nodo: ip-10-0-9-177.ec2.internal", "mode": "fixed" },
+                "valign": "middle"
+              }
+            },
+
+            {
+              "type": "text",
+              "name": "subheader",
+              "background": { "color": { "fixed": "#0d1117" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 22, "left": 0, "top": 40, "width": 790 },
+              "config": {
+                "align": "left",
+                "color": { "fixed": "#8b949e" },
+                "size": 10,
+                "text": { "fixed": "  instance: 10.0.0.10:9100  ·  StatefulSet  ·  join dinamico via kube_pod_info", "mode": "fixed" },
+                "valign": "middle"
+              }
+            },
+
+            {
+              "type": "text",
+              "name": "label_pod",
+              "background": { "color": { "fixed": "#161b22" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 22, "left": 10, "top": 72, "width": 178 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#8b949e" },
+                "size": 10,
+                "text": { "fixed": "POD STATUS", "mode": "fixed" },
+                "valign": "middle"
+              }
+            },
+            {
+              "type": "metric-value",
+              "name": "val_pod",
+              "background": { "color": { "fixed": "#0d1117" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 88, "left": 10, "top": 94, "width": 178 },
+              "config": {
+                "align": "center",
+                "color": { "field": "pod_ready", "fixed": "green" },
+                "size": 28,
+                "text": { "field": "pod_ready", "fixed": "", "mode": "field" },
+                "valign": "middle"
+              }
+            },
+
+            {
+              "type": "text",
+              "name": "label_restarts",
+              "background": { "color": { "fixed": "#161b22" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 22, "left": 198, "top": 72, "width": 178 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#8b949e" },
+                "size": 10,
+                "text": { "fixed": "REINICIOS", "mode": "fixed" },
+                "valign": "middle"
+              }
+            },
+            {
+              "type": "metric-value",
+              "name": "val_restarts",
+              "background": { "color": { "fixed": "#0d1117" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 88, "left": 198, "top": 94, "width": 178 },
+              "config": {
+                "align": "center",
+                "color": { "field": "restarts", "fixed": "green" },
+                "size": 28,
+                "text": { "field": "restarts", "fixed": "", "mode": "field" },
+                "valign": "middle"
+              }
+            },
+
+            {
+              "type": "text",
+              "name": "label_cpu",
+              "background": { "color": { "fixed": "#161b22" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 22, "left": 386, "top": 72, "width": 192 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#8b949e" },
+                "size": 10,
+                "text": { "fixed": "CPU NODO %", "mode": "fixed" },
+                "valign": "middle"
+              }
+            },
+            {
+              "type": "metric-value",
+              "name": "val_cpu",
+              "background": { "color": { "fixed": "#0d1117" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 88, "left": 386, "top": 94, "width": 192 },
+              "config": {
+                "align": "center",
+                "color": { "field": "cpu_pct", "fixed": "green" },
+                "size": 28,
+                "text": { "field": "cpu_pct", "fixed": "", "mode": "field" },
+                "valign": "middle"
+              }
+            },
+
+            {
+              "type": "text",
+              "name": "label_mem",
+              "background": { "color": { "fixed": "#161b22" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 22, "left": 588, "top": 72, "width": 192 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#8b949e" },
+                "size": 10,
+                "text": { "fixed": "MEMORIA NODO %", "mode": "fixed" },
+                "valign": "middle"
+              }
+            },
+            {
+              "type": "metric-value",
+              "name": "val_mem",
+              "background": { "color": { "fixed": "#0d1117" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 88, "left": 588, "top": 94, "width": 192 },
+              "config": {
+                "align": "center",
+                "color": { "field": "mem_pct", "fixed": "green" },
+                "size": 28,
+                "text": { "field": "mem_pct", "fixed": "", "mode": "field" },
+                "valign": "middle"
+              }
+            },
+
+            {
+              "type": "text",
+              "name": "label_disk",
+              "background": { "color": { "fixed": "#161b22" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 22, "left": 10, "top": 195, "width": 370 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#8b949e" },
+                "size": 10,
+                "text": { "fixed": "DISCO NODO % (mountpoint /)", "mode": "fixed" },
+                "valign": "middle"
+              }
+            },
+            {
+              "type": "metric-value",
+              "name": "val_disk",
+              "background": { "color": { "fixed": "#0d1117" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 88, "left": 10, "top": 217, "width": 370 },
+              "config": {
+                "align": "center",
+                "color": { "field": "disk_pct", "fixed": "green" },
+                "size": 28,
+                "text": { "field": "disk_pct", "fixed": "", "mode": "field" },
+                "valign": "middle"
+              }
+            },
+
+            {
+              "type": "text",
+              "name": "label_rx",
+              "background": { "color": { "fixed": "#161b22" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 22, "left": 390, "top": 195, "width": 190 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#8b949e" },
+                "size": 10,
+                "text": { "fixed": "RED  RX (bytes/s)", "mode": "fixed" },
+                "valign": "middle"
+              }
+            },
+            {
+              "type": "metric-value",
+              "name": "val_rx",
+              "background": { "color": { "fixed": "#0d1117" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 88, "left": 390, "top": 217, "width": 190 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#3d85c8" },
+                "size": 22,
+                "text": { "field": "net_rx", "fixed": "", "mode": "field" },
+                "valign": "middle"
+              }
+            },
+
+            {
+              "type": "text",
+              "name": "label_tx",
+              "background": { "color": { "fixed": "#161b22" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 22, "left": 590, "top": 195, "width": 190 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#8b949e" },
+                "size": 10,
+                "text": { "fixed": "RED  TX (bytes/s)", "mode": "fixed" },
+                "valign": "middle"
+              }
+            },
+            {
+              "type": "metric-value",
+              "name": "val_tx",
+              "background": { "color": { "fixed": "#0d1117" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 88, "left": 590, "top": 217, "width": 190 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#3d85c8" },
+                "size": 22,
+                "text": { "field": "net_tx", "fixed": "", "mode": "field" },
+                "valign": "middle"
+              }
+            },
+
+            {
+              "type": "text",
+              "name": "label_load",
+              "background": { "color": { "fixed": "#161b22" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 22, "left": 10, "top": 318, "width": 770 },
+              "config": {
+                "align": "left",
+                "color": { "fixed": "#8b949e" },
+                "size": 10,
+                "text": { "fixed": "  LOAD AVERAGE  (1 min  /  5 min  /  15 min)", "mode": "fixed" },
+                "valign": "middle"
+              }
+            },
+
+            {
+              "type": "text",
+              "name": "label_load1",
+              "background": { "color": { "fixed": "#161b22" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 18, "left": 10, "top": 340, "width": 250 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#6e7681" },
+                "size": 9,
+                "text": { "fixed": "1m", "mode": "fixed" },
+                "valign": "middle"
+              }
+            },
+            {
+              "type": "metric-value",
+              "name": "val_load1",
+              "background": { "color": { "fixed": "#0d1117" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 65, "left": 10, "top": 358, "width": 250 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#f0a500" },
+                "size": 26,
+                "text": { "field": "load1", "fixed": "", "mode": "field" },
+                "valign": "middle"
+              }
+            },
+
+            {
+              "type": "text",
+              "name": "label_load5",
+              "background": { "color": { "fixed": "#161b22" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 18, "left": 270, "top": 340, "width": 250 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#6e7681" },
+                "size": 9,
+                "text": { "fixed": "5m", "mode": "fixed" },
+                "valign": "middle"
+              }
+            },
+            {
+              "type": "metric-value",
+              "name": "val_load5",
+              "background": { "color": { "fixed": "#0d1117" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 65, "left": 270, "top": 358, "width": 250 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#f0a500" },
+                "size": 26,
+                "text": { "field": "load5", "fixed": "", "mode": "field" },
+                "valign": "middle"
+              }
+            },
+
+            {
+              "type": "text",
+              "name": "label_load15",
+              "background": { "color": { "fixed": "#161b22" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 18, "left": 530, "top": 340, "width": 250 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#6e7681" },
+                "size": 9,
+                "text": { "fixed": "15m", "mode": "fixed" },
+                "valign": "middle"
+              }
+            },
+            {
+              "type": "metric-value",
+              "name": "val_load15",
+              "background": { "color": { "fixed": "#0d1117" } },
+              "border":     { "color": { "fixed": "#30363d" }, "width": 1 },
+              "constraint": { "horizontal": "left", "vertical": "top" },
+              "links": [],
+              "placement": { "height": 65, "left": 530, "top": 358, "width": 250 },
+              "config": {
+                "align": "center",
+                "color": { "fixed": "#f0a500" },
+                "size": 26,
+                "text": { "field": "load15", "fixed": "", "mode": "field" },
+                "valign": "middle"
+              }
+            }
+
+          ]
+        },
+        "showAdvancedTypes": true,
+        "tooltip": { "mode": "none" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "kube_pod_status_ready{namespace=\"sonarqube\",pod=\"sonarqube-0\",condition=\"true\"}",
+          "instant": true,
+          "legendFormat": "pod_ready",
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "sum(kube_pod_container_status_restarts_total{namespace=\"sonarqube\",pod=\"sonarqube-0\"})",
+          "instant": true,
+          "legendFormat": "restarts",
+          "range": false,
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "100 - (avg(rate(node_cpu_seconds_total{job=\"node-exporter\",mode=\"idle\"}[5m]) * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")) * 100)",
+          "instant": true,
+          "legendFormat": "cpu_pct",
+          "range": false,
+          "refId": "C"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "(1 - (sum(node_memory_MemAvailable_bytes{job=\"node-exporter\"} * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")) / sum(node_memory_MemTotal_bytes{job=\"node-exporter\"} * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")))) * 100",
+          "instant": true,
+          "legendFormat": "mem_pct",
+          "range": false,
+          "refId": "D"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "(1 - (sum(node_filesystem_avail_bytes{job=\"node-exporter\",fstype!=\"tmpfs\",mountpoint=\"/\"} * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")) / sum(node_filesystem_size_bytes{job=\"node-exporter\",fstype!=\"tmpfs\",mountpoint=\"/\"} * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")))) * 100",
+          "instant": true,
+          "legendFormat": "disk_pct",
+          "range": false,
+          "refId": "E"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "sum(rate(node_network_receive_bytes_total{job=\"node-exporter\",device!=\"lo\"}[5m]) * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\"))",
+          "instant": true,
+          "legendFormat": "net_rx",
+          "range": false,
+          "refId": "F"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "sum(rate(node_network_transmit_bytes_total{job=\"node-exporter\",device!=\"lo\"}[5m]) * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\"))",
+          "instant": true,
+          "legendFormat": "net_tx",
+          "range": false,
+          "refId": "G"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "node_load1{job=\"node-exporter\"} * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")",
+          "instant": true,
+          "legendFormat": "load1",
+          "range": false,
+          "refId": "H"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "node_load5{job=\"node-exporter\"} * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")",
+          "instant": true,
+          "legendFormat": "load5",
+          "range": false,
+          "refId": "I"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "node_load15{job=\"node-exporter\"} * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")",
+          "instant": true,
+          "legendFormat": "load15",
+          "range": false,
+          "refId": "J"
+        }
+      ],
+      "transformations": [
+        { "id": "merge", "options": {} }
+      ],
+      "title": "SonarQube — Canvas Monitor",
+      "type": "canvas"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Barras horizontales con las mismas metricas del Canvas. Util para comparar de un vistazo el nivel de uso de cada recurso del nodo donde corre sonarqube-0.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 60   },
+              { "color": "red",    "value": 80   }
+            ]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "CPU %" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green",  "value": null },
+                    { "color": "yellow", "value": 60   },
+                    { "color": "red",    "value": 80   }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Memoria %" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green",  "value": null },
+                    { "color": "yellow", "value": 70   },
+                    { "color": "red",    "value": 85   }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Disco %" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green",  "value": null },
+                    { "color": "yellow", "value": 70   },
+                    { "color": "red",    "value": 85   }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Load 1m" },
+            "properties": [
+              { "id": "unit",  "value": "short" },
+              { "id": "min",   "value": 0 },
+              { "id": "max",   "value": 4 },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green",  "value": null },
+                    { "color": "yellow", "value": 2    },
+                    { "color": "red",    "value": 3.5  }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Load 5m" },
+            "properties": [
+              { "id": "unit",  "value": "short" },
+              { "id": "min",   "value": 0 },
+              { "id": "max",   "value": 4 },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green",  "value": null },
+                    { "color": "yellow", "value": 2    },
+                    { "color": "red",    "value": 3.5  }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Load 15m" },
+            "properties": [
+              { "id": "unit",  "value": "short" },
+              { "id": "min",   "value": 0 },
+              { "id": "max",   "value": 4 },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green",  "value": null },
+                    { "color": "yellow", "value": 2    },
+                    { "color": "red",    "value": 3.5  }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Red RX" },
+            "properties": [
+              { "id": "unit",  "value": "Bps" },
+              { "id": "min",   "value": 0 },
+              { "id": "max",   "value": null },
+              { "id": "color", "value": { "mode": "fixed", "fixed": "#3d85c8" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Red TX" },
+            "properties": [
+              { "id": "unit",  "value": "Bps" },
+              { "id": "min",   "value": 0 },
+              { "id": "max",   "value": null },
+              { "id": "color", "value": { "mode": "fixed", "fixed": "#3d85c8" } }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 24 },
+      "id": 2,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "100 - (avg(rate(node_cpu_seconds_total{job=\"node-exporter\",mode=\"idle\"}[5m]) * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")) * 100)",
+          "instant": true,
+          "legendFormat": "CPU %",
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "(1 - (sum(node_memory_MemAvailable_bytes{job=\"node-exporter\"} * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")) / sum(node_memory_MemTotal_bytes{job=\"node-exporter\"} * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")))) * 100",
+          "instant": true,
+          "legendFormat": "Memoria %",
+          "range": false,
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "(1 - (sum(node_filesystem_avail_bytes{job=\"node-exporter\",fstype!=\"tmpfs\",mountpoint=\"/\"} * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")) / sum(node_filesystem_size_bytes{job=\"node-exporter\",fstype!=\"tmpfs\",mountpoint=\"/\"} * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")))) * 100",
+          "instant": true,
+          "legendFormat": "Disco %",
+          "range": false,
+          "refId": "C"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "node_load1{job=\"node-exporter\"} * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")",
+          "instant": true,
+          "legendFormat": "Load 1m",
+          "range": false,
+          "refId": "D"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "node_load5{job=\"node-exporter\"} * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")",
+          "instant": true,
+          "legendFormat": "Load 5m",
+          "range": false,
+          "refId": "E"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "node_load15{job=\"node-exporter\"} * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\")",
+          "instant": true,
+          "legendFormat": "Load 15m",
+          "range": false,
+          "refId": "F"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "sum(rate(node_network_receive_bytes_total{job=\"node-exporter\",device!=\"lo\"}[5m]) * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\" ))",
+          "instant": true,
+          "legendFormat": "Red RX",
+          "range": false,
+          "refId": "G"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "editorMode": "code",
+          "expr": "sum(rate(node_network_transmit_bytes_total{job=\"node-exporter\",device!=\"lo\"}[5m]) * on(instance) group_left() label_replace(kube_pod_info{namespace=\"sonarqube\",pod=\"sonarqube-0\"},\"instance\",\"$1:9100\",\"host_ip\",\"(.*)\" ))",
+          "instant": true,
+          "legendFormat": "Red TX",
+          "range": false,
+          "refId": "H"
+        }
+      ],
+      "title": "SonarQube — Metricas del Nodo (barras)",
+      "type": "bargauge"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "tags": ["sonarqube", "canvas", "infra"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "type": "datasource",
+        "label": "Datasource"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "SonarQube 03 — Canvas Monitor",
+  "uid": "sonarqube-canvas-03",
+  "version": 1
+}

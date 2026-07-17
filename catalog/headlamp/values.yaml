@@ -1,0 +1,59 @@
+enabled: false
+
+karpenterReadOnlyClusterRole:
+  enabled: true
+  name: headlamp-karpenter-readonly
+
+# Values passed to the headlamp subchart dependency.
+headlamp:
+  replicaCount: 1
+
+  config:
+    inCluster: true
+    inClusterContextName: internal
+    unsafeUseServiceAccountToken: false
+    enableHelm: false
+    watchPlugins: true
+    oidc:
+      secret:
+        create: false
+
+  serviceAccount:
+    create: true
+    name: headlamp
+
+  clusterRoleBinding:
+    create: true
+    clusterRoleName: headlamp-karpenter-readonly
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  env:
+    - name: HEADLAMP_DEPLOYMENT_MODE
+      value: internal
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  pluginsManager:
+    enabled: false
+    version: 0.1.1
+    configContent: ""
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 768Mi

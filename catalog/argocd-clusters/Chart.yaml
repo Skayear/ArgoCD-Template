@@ -1,0 +1,14 @@
+apiVersion: v2
+name: argocd-clusters
+description: Declarative Argo CD cluster registration via cluster Secrets
+type: application
+version: 0.1.0
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - argocd
+  - cluster
+  - secret
+  - gitops

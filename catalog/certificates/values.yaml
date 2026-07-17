@@ -1,0 +1,11 @@
+certificates:
+  enabled: true
+  items:
+    - name: argocd-internal-example-com
+      namespace: argocd
+      secretName: argocd-internal-example-com-tls
+      issuerRef:
+        name: letsencrypt-prod
+        kind: ClusterIssuer
+      dnsNames:
+        - argocd.internal.example.com

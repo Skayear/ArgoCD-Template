@@ -1,0 +1,5 @@
+apiVersion: v2
+name: argocd-projects
+description: Helm chart that renders Argo CD AppProjects
+type: application
+version: 0.1.0

@@ -1,0 +1,27 @@
+valuesObject:
+  routes:
+    enabled: true
+    items:
+      - name: argo-route
+        namespace: argocd
+        ingressClassName: apisix
+        hosts:
+          - argocd.internal.example.com
+        paths:
+          - /*
+        backend:
+          serviceName: argocd-server
+          servicePort: 80
+          resolveGranularity: service
+
+  tls:
+    enabled: true
+    items:
+      - name: argocd-apisixtls-tls
+        namespace: argocd
+        ingressClassName: apisix
+        hosts:
+          - argocd.internal.example.com
+        secret:
+          name: argocd-internal-example-com-tls
+          namespace: argocd

@@ -1,0 +1,38 @@
+{{- if .Values.nlbInternal.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ default (printf "%s-gateway-internal" .Release.Name) .Values.nlbInternal.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: apisix
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/service: apisix-gateway-internal
+  {{- with .Values.nlbInternal.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: LoadBalancer
+  {{- with .Values.nlbInternal.loadBalancerClass }}
+  loadBalancerClass: {{ . }}
+  {{- end }}
+  externalTrafficPolicy: {{ default "Local" .Values.nlbInternal.externalTrafficPolicy }}
+  ports:
+    {{- if .Values.nlbInternal.ports.http.enabled }}
+    - name: apisix-gateway
+      port: {{ .Values.nlbInternal.ports.http.port }}
+      targetPort: {{ .Values.nlbInternal.ports.http.targetPort }}
+      protocol: {{ default "TCP" .Values.nlbInternal.ports.http.protocol }}
+    {{- end }}
+    {{- if .Values.nlbInternal.ports.tls.enabled }}
+    - name: apisix-gateway-tls
+      port: {{ .Values.nlbInternal.ports.tls.port }}
+      targetPort: {{ .Values.nlbInternal.ports.tls.targetPort }}
+      protocol: {{ default "TCP" .Values.nlbInternal.ports.tls.protocol }}
+    {{- end }}
+  selector:
+    app.kubernetes.io/name: apisix
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

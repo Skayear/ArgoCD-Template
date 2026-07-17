@@ -1,0 +1,32 @@
+{{- if .Values.defaultDashboards.enabled }}
+{{- $root := . }}
+{{- $label := .Values.defaultDashboards.label | default "grafana_dashboard" }}
+{{- $labelValue := .Values.defaultDashboards.labelValue | default "1" }}
+{{- $folderAnnotation := .Values.defaultDashboards.folderAnnotation | default "grafana_folder" }}
+{{- $targetDirAnnotation := .Values.defaultDashboards.targetDirectoryAnnotation | default "k8s-sidecar-target-directory" }}
+{{- range $path, $_ := .Files.Glob (.Values.defaultDashboards.path | default "dashboards/**/*.json") }}
+{{- $relativePath := trimPrefix "dashboards/" $path }}
+{{- $resourceName := trimSuffix ".json" $relativePath | replace "/" "-" | replace " " "-" | lower }}
+{{- $folder := dir $relativePath }}
+{{- if or (eq $folder ".") (eq $folder (base $relativePath)) }}
+{{- $folder = "General" }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-dashboard-%s" $root.Release.Name $resourceName | trunc 63 | trimSuffix "-" }}
+  namespace: {{ $root.Release.Namespace | quote }}
+  labels:
+    {{ $label }}: {{ $labelValue | quote }}
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/instance: {{ $root.Release.Name | quote }}
+    app.kubernetes.io/managed-by: {{ $root.Release.Service | quote }}
+  annotations:
+    {{ $folderAnnotation }}: {{ $folder | quote }}
+    {{ $targetDirAnnotation }}: {{ printf "/tmp/dashboards/%s" $folder | quote }}
+data:
+  {{ base $path | quote }}: |-
+{{ $root.Files.Get $path | nindent 4 }}
+{{- end }}
+{{- end }}

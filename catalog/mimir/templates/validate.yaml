@@ -1,0 +1,19 @@
+{{- if .Values.enabled -}}
+{{- $md := get .Values "mimir-distributed" | default dict -}}
+{{- $sa := get $md "serviceAccount" | default dict -}}
+{{- $saName := get $sa "name" | default "" -}}
+{{- $mimir := get $md "mimir" | default dict -}}
+{{- $structured := get $mimir "structuredConfig" | default dict -}}
+{{- $common := get $structured "common" | default dict -}}
+{{- $storage := get $common "storage" | default dict -}}
+{{- $backend := get $storage "backend" | default "" -}}
+{{- if not $saName -}}
+{{- fail "catalog/mimir requiere definir `mimir-distributed.serviceAccount.name` desde el cliente." -}}
+{{- end -}}
+{{- if not $backend -}}
+{{- fail "catalog/mimir requiere definir `mimir-distributed.mimir.structuredConfig.common.storage.backend` desde el cliente." -}}
+{{- end -}}
+{{- if eq $backend "filesystem" -}}
+{{- fail "catalog/mimir no admite `common.storage.backend=filesystem` para el backend central. Definelo con storage compartido por cliente, por ejemplo `s3`, `azure` o equivalente compatible." -}}
+{{- end -}}
+{{- end -}}

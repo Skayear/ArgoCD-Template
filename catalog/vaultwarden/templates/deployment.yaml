@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vaultwarden.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "vaultwarden.labels" . | nindent 4 }}
+    app.kubernetes.io/component: app
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 3
+  strategy:
+    {{- toYaml .Values.strategy | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "vaultwarden.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: app
+  template:
+    metadata:
+      labels:
+        {{- include "vaultwarden.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: app
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: vaultwarden
+          image: {{ include "vaultwarden.image" . | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+          {{- if or .Values.app.secrets .Values.app.configmaps }}
+          envFrom:
+          {{- range .Values.app.secrets }}
+            - secretRef:
+                name: {{ . | quote }}
+          {{- end }}
+          {{- range .Values.app.configmaps }}
+            - configMapRef:
+                name: {{ . | quote }}
+          {{- end }}
+          {{- end }}
+
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if and .Values.app.persistence .Values.app.persistence.enabled }}
+          volumeMounts:
+            - name: vaultwarden-data
+              mountPath: /data
+          {{- end }}
+
+      {{- if and .Values.app.persistence .Values.app.persistence.enabled }}
+      volumes:
+        - name: vaultwarden-data
+          persistentVolumeClaim:
+            claimName: {{ include "vaultwarden.fullname" . }}-data
+      {{- end }}

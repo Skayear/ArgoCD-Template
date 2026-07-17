@@ -1,0 +1,25 @@
+# Values passed to the sonarqube subchart dependency
+sonarqube:
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: false
+  persistence:
+    enabled: true
+    size: 20Gi
+
+# Optional ExternalSecret to populate JDBC credentials for SonarQube
+externalSecrets:
+  enabled: false
+  refreshInterval: 1h
+  secretStoreRef:
+    name: ""
+    kind: ClusterSecretStore
+  target:
+    name: sonarqube-jdbc
+    creationPolicy: Owner
+  data:
+    - secretKey: jdbc-password
+      remoteRef:
+        key: "sonarqube/db"
+        property: "password"

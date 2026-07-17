@@ -1,0 +1,3 @@
+release: internal-prometheus-stack
+account: internal
+environment: internal

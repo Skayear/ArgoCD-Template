@@ -1,0 +1,17 @@
+# Helm
+catalog/**/charts/*.tgz
+catalog/**/charts/**/*.tgz
+.helmignore
+
+# Local secrets / overrides — nunca commitear valores reales de un ambiente
+*.secrets.yaml
+*-secrets.yaml
+*.local.yaml
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Python (scripts/)
+__pycache__/
+*.pyc

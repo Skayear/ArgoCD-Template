@@ -1,0 +1,20 @@
+apiVersion: v2
+name: loki
+description: Helm chart that deploys Loki with reference defaults
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: loki
+    condition: enabled
+    version: 6.55.0
+    repository: https://grafana.github.io/helm-charts
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - loki
+  - logs
+  - observability
+  - monitoring

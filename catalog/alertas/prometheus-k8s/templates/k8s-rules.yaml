@@ -1,0 +1,160 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: k8s-alerts
+  namespace: monitoring
+  labels:
+    release: {{ .Values.release | default "internal-prometheus-stack" }}
+spec:
+  groups:
+
+    - name: k8s-critical
+      rules:
+
+        - alert: KubernetesNodeUnreachable
+          expr: |
+            max by(instance) (
+              up{job="node-exporter"}
+            )
+            * on(instance) group_left(nodename)
+            max by(instance, nodename) (
+              node_uname_info{job="node-exporter"}
+            ) < 1
+          for: 10m
+          labels:
+            severity: critical
+            account: {{ .Values.account }}
+            component: k8s-nodes
+            service: kubernetes
+            environment: {{ .Values.environment }}
+            team: sre
+          annotations:
+            summary: "Kubernetes node is unreachable"
+            description: "Node {{ `{{ $labels.nodename }}` }} ({{ `{{ $labels.instance }}` }}) is not responding to node-exporter"
+            runbook_url: "https://wiki.example.com/runbooks/high-restart-count"
+
+    - name: k8s-capacity
+      rules:
+
+        - alert: KubernetesHighCPUUsage
+          expr: |
+            (
+              100 - (
+                avg by(instance)(
+                  rate(node_cpu_seconds_total{job="node-exporter",mode="idle"}[5m])
+                ) * 100
+              )
+            )
+            * on(instance) group_left(nodename)
+            max by(instance, nodename) (
+              node_uname_info{job="node-exporter"}
+            ) > 85
+          for: 10m
+          labels:
+            severity: warning
+            account: {{ .Values.account }}
+            component: cpu
+            service: kubernetes
+            environment: {{ .Values.environment }}
+            team: sre
+          annotations:
+            summary: "High CPU usage detected on node"
+            description: "Node {{ `{{ $labels.nodename }}` }} ({{ `{{ $labels.instance }}` }}) is using {{ `{{ printf \"%.1f\" $value }}` }}% CPU for more than 10m (threshold: 85%)."
+
+        - alert: KubernetesHighMemoryUsage
+          expr: |
+            (
+              1 - (
+                node_memory_MemAvailable_bytes{job="node-exporter"}
+                /
+                node_memory_MemTotal_bytes{job="node-exporter"}
+              )
+            ) * 100
+            * on(instance) group_left(nodename)
+            max by(instance, nodename) (
+              node_uname_info{job="node-exporter"}
+            ) > 90
+          for: 10m
+          labels:
+            severity: warning
+            account: {{ .Values.account }}
+            component: memory
+            service: kubernetes
+            environment: {{ .Values.environment }}
+            team: sre
+          annotations:
+            summary: "High memory usage detected on node"
+            description: "Node {{ `{{ $labels.nodename }}` }} ({{ `{{ $labels.instance }}` }}) is using {{ `{{ printf \"%.1f\" $value }}` }}% memory for more than 10m (threshold: 90%)."
+
+        - alert: KubernetesHighDiskUsage
+          expr: |
+            (
+              1 - (
+                node_filesystem_avail_bytes{job="node-exporter",mountpoint="/",fstype!="tmpfs"}
+                /
+                node_filesystem_size_bytes{job="node-exporter",mountpoint="/",fstype!="tmpfs"}
+              )
+            ) * 100
+            * on(instance) group_left(nodename)
+            max by(instance, nodename) (
+              node_uname_info{job="node-exporter"}
+            ) > 85
+          for: 10m
+          labels:
+            severity: warning
+            account: {{ .Values.account }}
+            component: storage
+            service: kubernetes
+            environment: {{ .Values.environment }}
+            team: sre
+          annotations:
+            summary: "High disk usage detected on node"
+            description: "Node {{ `{{ $labels.nodename }}` }} ({{ `{{ $labels.instance }}` }}) is using {{ `{{ printf \"%.1f\" $value }}` }}% of root disk for more than 10m (threshold: 85%)."
+
+    - name: k8s-pressure
+      rules:
+
+        - alert: KubernetesDiskPressure
+          expr: |
+            kube_node_status_condition{condition="DiskPressure",status="true"} > 0
+          for: 10m
+          labels:
+            severity: warning
+            account: {{ .Values.account }}
+            component: storage
+            service: kubernetes
+            environment: {{ .Values.environment }}
+            team: sre
+          annotations:
+            summary: "Kubernetes node disk pressure detected"
+            description: "Node {{ `{{ $labels.node }}` }} is reporting DiskPressure=True for more than 10m."
+
+        - alert: KubernetesMemoryPressure
+          expr: |
+            kube_node_status_condition{condition="MemoryPressure",status="true"} > 0
+          for: 10m
+          labels:
+            severity: warning
+            account: {{ .Values.account }}
+            component: memory
+            service: kubernetes
+            environment: {{ .Values.environment }}
+            team: sre
+          annotations:
+            summary: "Kubernetes node memory pressure detected"
+            description: "Node {{ `{{ $labels.node }}` }} is reporting MemoryPressure=True for more than 10m."
+
+        - alert: KubernetesPIDPressure
+          expr: |
+            kube_node_status_condition{condition="PIDPressure",status="true"} > 0
+          for: 10m
+          labels:
+            severity: warning
+            account: {{ .Values.account }}
+            component: process
+            service: kubernetes
+            environment: {{ .Values.environment }}
+            team: sre
+          annotations:
+            summary: "Kubernetes node PID pressure detected"
+            description: "Node {{ `{{ $labels.node }}` }} is reporting PIDPressure=True for more than 10m."

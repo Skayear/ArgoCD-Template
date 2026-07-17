@@ -1,0 +1,28 @@
+{{- if .Values.nodePools.enabled }}
+{{- range .Values.nodePools.items }}
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: {{ .name | quote }}
+spec:
+  {{- with .disruption }}
+  disruption:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  template:
+    spec:
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: {{ .nodeClassRef.name | quote }}
+      {{- with .taints }}
+      taints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      requirements:
+        {{- toYaml .requirements | nindent 8 }}
+  limits:
+    {{- toYaml .limits | nindent 4 }}
+---
+{{- end }}
+{{- end }}

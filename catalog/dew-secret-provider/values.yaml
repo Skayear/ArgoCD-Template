@@ -1,0 +1,11 @@
+serviceAccount:
+  name: ""
+  csmsSecrets: []
+
+csmsObjects: []
+
+secretObjects: []
+
+imagePullSecret:
+  enabled: false
+  bootstrapImage: "busybox:1.36"

@@ -1,0 +1,22 @@
+apiVersion: v2
+name: karpenter-crd
+description: Helm wrapper chart for Karpenter CRDs
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: karpenter-crd
+    version: 1.12.0
+    repository: oci://public.ecr.aws/karpenter
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - karpenter
+  - crd
+  - aws
+  - eks
+  - node-provisioning
+  - autoscaling
+  - infrastructure

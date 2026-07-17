@@ -1,0 +1,10 @@
+aws:
+  # SecretsManager or ParameterStore
+  kind: ClusterSecretStore
+  service: SecretsManager
+  region: ""
+  secretStoreName: sonarqube-secret-store
+  namespace: external-secrets
+  serviceAccount:
+    name: external-secrets-aws
+    roleArn: ""

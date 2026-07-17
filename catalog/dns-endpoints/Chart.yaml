@@ -1,0 +1,14 @@
+apiVersion: v2
+name: dns-endpoints
+description: Reusable DNSEndpoint resources for ExternalDNS-managed app hostnames
+type: application
+version: 0.1.0
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - dns
+  - external-dns
+  - route53
+  - cname

@@ -1,0 +1,100 @@
+config:
+  spec:
+    destination:
+      server: https://kubernetes.default.svc
+    source:
+      repoURL: https://github.com/<your-org>/<your-repo>.git
+      targetRevision: main
+applications:
+  - name: internal-external-secrets
+    namespace: external-secrets
+    path: catalog/external-secrets/core
+    project: internal
+    syncWave: "0"
+
+  - name: internal-metrics-server
+    namespace: kube-system
+    path: catalog/metrics-server
+    project: internal
+    syncWave: "0"
+    releaseName: metrics-server
+    valuesObjectFile: values/metrics-server.yaml
+
+  - name: internal-apisix
+    namespace: ingress-apisix
+    path: catalog/apisix
+    project: internal
+    syncWave: "0"
+    valuesObjectFile: values/apisix.yaml
+
+  - name: internal-external-dns
+    namespace: external-dns
+    path: catalog/external-dns
+    project: internal
+    syncWave: "0"
+    valuesObjectFile: values/external-dns.yaml
+
+  - name: internal-private-dns
+    namespace: external-dns
+    path: catalog/external-dns
+    project: internal
+    syncWave: "0"
+    valuesObjectFile: values/private-dns.yaml
+
+  - name: internal-cert-manager
+    namespace: cert-manager
+    path: catalog/cert-manager
+    project: internal
+    syncWave: "0"
+    valuesObjectFile: values/cert-manager.yaml
+
+  - name: internal-aws-load-balancer-controller
+    namespace: kube-system
+    path: catalog/aws-load-balancer-controller
+    project: internal
+    syncWave: "0"
+    releaseName: aws-load-balancer-controller
+    helmSkipCrds: true
+    valuesObjectFile: values/aws-load-balancer-controller.yaml
+
+  - name: internal-external-secrets-aws
+    namespace: external-secrets
+    path: catalog/external-secrets-aws
+    project: internal
+    syncWave: "1"
+    valuesObjectFile: values/external-secrets-aws.yaml
+
+  - name: internal-apisix-routes
+    namespace: argocd
+    path: catalog/apisix-routes
+    project: internal
+    syncWave: "1"
+    valuesObjectFile: values/apisix-routes.yaml
+
+  - name: internal-dns-endpoints
+    namespace: argocd
+    path: catalog/dns-endpoints
+    project: internal
+    syncWave: "1"
+    valuesObjectFile: values/dns-endpoints.yaml
+
+  - name: internal-private-dns-endpoints
+    namespace: argocd
+    path: catalog/dns-endpoints
+    project: internal
+    syncWave: "1"
+    valuesObjectFile: values/private-dns-endpoints.yaml
+
+  - name: internal-clusterissuers
+    namespace: cert-manager
+    path: catalog/clusterissuers
+    project: internal
+    syncWave: "1"
+    valuesObjectFile: values/clusterissuers.yaml
+
+  - name: internal-certificates
+    namespace: argocd
+    path: catalog/certificates
+    project: internal
+    syncWave: "2"
+    valuesObjectFile: values/certificates.yaml

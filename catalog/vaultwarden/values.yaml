@@ -1,0 +1,121 @@
+replicaCount: 1
+
+strategy:
+  type: Recreate
+
+image:
+  repository: ""
+  tag: ""
+  digest: ""
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+app:
+  url: ""
+  dir: ""
+  siteName: ""
+  emailReturn: ""
+  language: en-US
+  defaultTimezone: UTC
+  debug: "0"
+  logChannels: stderr
+  disableLoginForm: false
+  trustedProxies: ""
+  persistence:
+    enabled: false
+    size: ""
+    accessModes: []
+    storageClassName: ""
+  secrets: []
+  configmaps: []
+  config:
+    enabled: true
+
+configmap:
+  enabled: false
+  configs: []
+
+mysql:
+  enabled: false
+  image:
+    repository: ""
+    tag: ""
+    pullPolicy: IfNotPresent
+  service:
+    port: 3306
+  persistence:
+    enabled: false
+    size: ""
+    accessModes: []
+    storageClassName: ""
+  secrets: []
+  configmaps: []
+  resources: {}
+
+externalDatabase:
+  host: ""
+  port: 5432
+  database: ""
+  user: ""
+
+volumePermissions:
+  enabled: false
+  image:
+    repository: ""
+    tag: ""
+    pullPolicy: IfNotPresent
+  uid: 1000
+  gid: 1000
+
+secret:
+  existingSecret: ""
+  keys: {}
+
+externalSecrets:
+  enabled: false
+  refreshInterval: 1h
+  secretStoreRef:
+    name: ""
+    kind: SecretStore
+  target:
+    name: ""
+    creationPolicy: Owner
+  data: []
+
+extraEnv: []
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+readinessProbe:
+  httpGet:
+    path: /alive
+    port: http
+    scheme: HTTP
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+livenessProbe:
+  httpGet:
+    path: /alive
+    port: http
+    scheme: HTTP
+  initialDelaySeconds: 90
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+podSecurityContext: {}
+
+securityContext: {}

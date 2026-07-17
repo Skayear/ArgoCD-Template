@@ -1,0 +1,18 @@
+apiVersion: v2
+name: apisix
+description: Helm chart that deploys APISIX as an ArgoCD Application into the cluster
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: apisix
+    version: 2.13.0
+    repository: https://apache.github.io/apisix-helm-chart
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - apisix
+  - gateway
+  - ingress

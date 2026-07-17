@@ -1,0 +1,22 @@
+opentelemetry-demo:
+  opentelemetry-collector:
+    enabled: false
+
+  jaeger:
+    enabled: false
+
+  grafana:
+    enabled: false
+
+  prometheus:
+    enabled: false
+
+  opensearch:
+    enabled: false
+
+  default:
+    envOverrides:
+      - name: OTEL_COLLECTOR_NAME
+        value: internal-k8s-monitoring-alloy-receiver.monitoring.svc.cluster.local
+      - name: OTEL_TRACES_SAMPLER
+        value: always_on

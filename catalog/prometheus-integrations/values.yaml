@@ -1,0 +1,6 @@
+enabled: false
+
+serviceMonitors:
+  commonLabels: {}
+  commonMetricRelabelings: []
+  items: []

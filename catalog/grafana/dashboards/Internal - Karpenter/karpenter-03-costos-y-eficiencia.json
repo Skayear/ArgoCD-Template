@@ -1,0 +1,991 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Dashboard simplificado para comparar costo mensual anterior vs costo mensual actual con Karpenter/OpenCost.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": 0,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Costos mensuales - antes vs actual",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Qué mide:\n- Comparación mensual entre el baseline anterior y el costo actual estimado.\n\nBaseline:\n- 5 nodos m7i.xlarge durante 730 horas.\n\nActual:\n- Suma de node_total_hourly_cost multiplicada por 730.\n\nLectura rápida:\n- Si la barra actual es menor que baseline, Karpenter está reduciendo costo mensual estimado.",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 15,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "displayMode": "basic",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "730 * 5 * (avg(node_total_hourly_cost{instance_type=\"m7i.xlarge\"}) or vector(0.20159656163787842))",
+          "legendFormat": "Antes: 5 x m7i.xlarge",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "730 * (sum(node_total_hourly_cost) or vector(0))",
+          "legendFormat": "Actual: Karpenter/OpenCost",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Comparación mensual: baseline vs actual",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Costo mensual estimado actual usando OpenCost. Es la métrica principal para comparar contra factura aproximada.",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 15,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "730 * (sum(node_total_hourly_cost) or vector(0))",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Costo mensual actual",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Porcentaje de ahorro estimado contra el baseline anterior.",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 5,
+        "x": 19,
+        "y": 1
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "100 * ((730 * 5 * (avg(node_total_hourly_cost{instance_type=\"m7i.xlarge\"}) or vector(0.20159656163787842))) - (730 * (sum(node_total_hourly_cost) or vector(0)))) / (730 * 5 * (avg(node_total_hourly_cost{instance_type=\"m7i.xlarge\"}) or vector(0.20159656163787842)))",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Ahorro mensual %",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Diferencia entre baseline mensual y costo actual mensual. Valor positivo indica ahorro estimado.",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 15,
+        "y": 6
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "(730 * 5 * (avg(node_total_hourly_cost{instance_type=\"m7i.xlarge\"}) or vector(0.20159656163787842))) - (730 * (sum(node_total_hourly_cost) or vector(0)))",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Ahorro mensual estimado",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "id": 6,
+      "panels": [],
+      "title": "Explicación del costo",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Muestra qué tipos de instancia explican el costo mensual actual. Útil para validar si Karpenter está usando tamaños esperados.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "730 * sum by (instance_type) (node_total_hourly_cost)",
+          "legendFormat": "{{instance_type}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Costo mensual por instance type",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Compara la cantidad actual de nodos Ready contra el baseline histórico de 5 nodos.",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "id": 8,
+      "options": {
+        "displayMode": "basic",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"} * on(node) group_left() kube_node_status_condition{condition=\"Ready\",status=\"true\"})",
+          "legendFormat": "Actual",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "5",
+          "legendFormat": "Baseline anterior",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Nodos actuales vs baseline",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Distribución actual de nodos por tipo de instancia.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 19
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count by (label_node_kubernetes_io_instance_type) (kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\",label_node_kubernetes_io_instance_type=~\"$instance_type\"})",
+          "instant": true,
+          "legendFormat": "{{label_node_kubernetes_io_instance_type}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Distribución de nodos por instance type",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Distribución entre On-Demand y Spot. Si no usan Spot, lo esperado es ver On-Demand.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 19
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count by (label_karpenter_sh_capacity_type) (kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\",label_karpenter_sh_capacity_type=~\"$capacity_type\"})",
+          "instant": true,
+          "legendFormat": "{{label_karpenter_sh_capacity_type}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Distribución por capacity type",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Distribución de nodos por zona de disponibilidad.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 19
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count by (label_topology_kubernetes_io_zone) (kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"})",
+          "instant": true,
+          "legendFormat": "{{label_topology_kubernetes_io_zone}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Distribución por zona",
+      "type": "piechart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "id": 12,
+      "panels": [],
+      "title": "Detalle técnico",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Qué muestra:\n- Tabla de nodos con labels operativos y costo por nodo cuando existe node_total_hourly_cost.\n\nPara qué sirve:\n- Encontrar nodos caros, tipos de instancia inesperados o concentración por zona/NodePool.\n- Es la vista de investigación cuando un panel de costo o eficiencia se ve raro.\n\nDependencias:\n- Para costo monetario requiere OpenCost/Kubecost.\n- Para columnas de NodePool/instance type requiere kube_node_labels con labels permitidos.\n\nCuándo preocuparse:\n- Nodos con costo alto y baja utilización.\n- Instance types inesperados.\n- Zonas o NodePools no deseados.\n- Tabla sin datos aunque existan nodos.\n\nColores / lectura rápida:\n- Valores de costo altos deben revisarse contra uso y criticidad.\n- Labels vacíos apuntan a problema de métricas/allowlist.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "id": 13,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\",label_karpenter_sh_capacity_type=~\"$capacity_type\",label_node_kubernetes_io_instance_type=~\"$instance_type\"}",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{node}}",
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "node_total_hourly_cost",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{node}}",
+          "range": false,
+          "refId": "Cost"
+        }
+      ],
+      "title": "Inventario + costo por nodo",
+      "transformations": [
+        {
+          "id": "seriesToColumns",
+          "options": {
+            "byField": "node"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time 1": true,
+              "Time 2": true,
+              "__name__": true,
+              "container": true,
+              "endpoint": true,
+              "instance": true,
+              "job": true,
+              "namespace": true,
+              "pod": true,
+              "service": true
+            },
+            "indexByName": {
+              "$/h": 5,
+              "Capacity": 2,
+              "Instance type": 3,
+              "NodePool": 1,
+              "Nodo": 0,
+              "Zona": 4
+            },
+            "renameByName": {
+              "Value #A": "Labels",
+              "Value #Cost": "$/h",
+              "label_karpenter_sh_capacity_type": "Capacity",
+              "label_karpenter_sh_nodepool": "NodePool",
+              "label_node_kubernetes_io_instance_type": "Instance type",
+              "label_topology_kubernetes_io_zone": "Zona",
+              "node": "Nodo"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "description": "Guía corta para leer el dashboard.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
+      "id": 14,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "# Cómo leer este dashboard\n\nEste dashboard está enfocado en costo mensual, porque es lo que normalmente se compara contra factura.\n\n## Costo anterior\n\nEl baseline representa el escenario previo: 5 nodos m7i.xlarge corriendo durante 730 horas.\n\n## Costo actual\n\nEl costo actual sale de OpenCost usando `node_total_hourly_cost` y se proyecta a mes con 730 horas.\n\n## Ahorro mensual estimado\n\nEs baseline mensual menos costo mensual actual. No es factura final; es una estimación operativa para ver tendencia y magnitud.\n\n## Qué revisar si algo se ve raro\n\n- Instance types inesperados.\n- Más nodos que el baseline sin aumento de carga.\n- Costo concentrado en una AZ o tipo de instancia.\n- OpenCost sin datos o targets caídos en Prometheus.\n",
+        "mode": "markdown"
+      },
+      "pluginVersion": "12.3.1",
+      "title": "Notas de lectura",
+      "type": "text"
+    }
+  ],
+  "preload": false,
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "karpenter",
+    "eks",
+    "autoscaling",
+    "costs",
+    "opencost"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "Internal Mimir",
+          "value": "prometheus"
+        },
+        "label": "Prometheus",
+        "name": "DS_PROMETHEUS",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(kube_node_labels, label_karpenter_sh_nodepool)",
+        "includeAll": true,
+        "multi": true,
+        "name": "nodepool",
+        "options": [],
+        "query": {
+          "query": "label_values(kube_node_labels, label_karpenter_sh_nodepool)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(kube_pod_status_phase, namespace)",
+        "includeAll": true,
+        "multi": true,
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(kube_pod_status_phase, namespace)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"}, label_karpenter_sh_capacity_type)",
+        "includeAll": true,
+        "multi": true,
+        "name": "capacity_type",
+        "options": [],
+        "query": {
+          "query": "label_values(kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"}, label_karpenter_sh_capacity_type)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"}, label_node_kubernetes_io_instance_type)",
+        "includeAll": true,
+        "multi": true,
+        "name": "instance_type",
+        "options": [],
+        "query": {
+          "query": "label_values(kube_node_labels{label_karpenter_sh_nodepool=~\"$nodepool\"}, label_node_kubernetes_io_instance_type)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Karpenter - Costos mensuales",
+  "uid": "karpenter-costos-mensual-simple",
+  "version": 2
+}

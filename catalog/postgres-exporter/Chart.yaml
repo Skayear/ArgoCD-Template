@@ -1,0 +1,17 @@
+apiVersion: v2
+name: postgres-exporter
+description: Wrapper chart for prometheus-postgres-exporter
+type: application
+version: 0.1.0
+appVersion: "0.19.1"
+
+dependencies:
+  - name: prometheus-postgres-exporter
+    version: 7.5.2
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: enabled
+
+keywords:
+  - postgres
+  - exporter
+  - prometheus

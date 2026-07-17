@@ -1,0 +1,16 @@
+apiVersion: v2
+name: karpenter-nodepools
+description: Helm chart for Karpenter EC2NodeClass and NodePool resources
+type: application
+version: 0.1.0
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - karpenter
+  - nodepools
+  - aws
+  - eks
+  - node-provisioning
+  - autoscaling

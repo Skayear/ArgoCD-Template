@@ -1,0 +1,20 @@
+apiVersion: v2
+name: external-dns
+description: Helm chart that deploys ExternalDNS for Route53 integration
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: external-dns
+    condition: enabled
+    version: 1.19.0
+    repository: https://kubernetes-sigs.github.io/external-dns/
+
+maintainers:
+  - name: Equipo de Plataforma
+
+keywords:
+  - dns
+  - route53
+  - aws
+  - external-dns

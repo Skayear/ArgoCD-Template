@@ -1,0 +1,56 @@
+{{- $bb := index .Values "prometheus-blackbox-exporter" -}}
+{{- if and .Values.enabled $bb.serviceMonitor.enabled $bb.serviceMonitor.targets }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ printf "%s-probes" .Release.Name | trunc 63 | trimSuffix "-" }}
+  namespace: {{ default .Release.Namespace $bb.namespaceOverride }}
+  labels:
+    {{- include "prometheus-blackbox-exporter.labels" . | nindent 4 }}
+    {{- with $bb.serviceMonitor.defaults.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  jobLabel: "{{ .Release.Name }}"
+  selector:
+    matchLabels:
+      {{- include "prometheus-blackbox-exporter.selectorLabels" . | nindent 6 }}
+  namespaceSelector:
+    matchNames:
+      - {{ template "prometheus-blackbox-exporter.namespace" . }}
+  endpoints:
+    {{- range $bb.serviceMonitor.targets }}
+    - port: http
+      scheme: {{ default "http" $bb.serviceMonitor.scheme }}
+      path: {{ default "/probe" $bb.serviceMonitor.path }}
+      interval: {{ .interval | default $bb.serviceMonitor.defaults.interval }}
+      scrapeTimeout: {{ .scrapeTimeout | default $bb.serviceMonitor.defaults.scrapeTimeout }}
+      params:
+        module:
+          - {{ .module | default $bb.serviceMonitor.defaults.module }}
+        target:
+          - {{ .url }}
+        {{- with .hostname }}
+        hostname:
+          - {{ . }}
+        {{- end }}
+      metricRelabelings:
+        - sourceLabels: [instance]
+          targetLabel: instance
+          replacement: {{ .url }}
+          action: replace
+        - sourceLabels: [target]
+          targetLabel: target
+          replacement: {{ .name }}
+          action: replace
+        {{- range $targetLabel, $replacement := .additionalMetricsRelabels | default $bb.serviceMonitor.defaults.additionalMetricsRelabels }}
+        - targetLabel: {{ $targetLabel | quote }}
+          replacement: {{ $replacement | quote }}
+          action: replace
+        {{- end }}
+      {{- with .additionalRelabeling | default $bb.serviceMonitor.defaults.additionalRelabeling }}
+      relabelings:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+{{- end }}

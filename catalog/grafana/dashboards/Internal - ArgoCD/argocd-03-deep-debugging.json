@@ -1,0 +1,1656 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Dashboard avanzado de troubleshooting para ArgoCD.\n\nIncluye performance de Git/reconciliación, runtime de componentes, errores internos gRPC críticos y fallos Redis.\n\nEste dashboard no está pensado para operación diaria general, sino para investigación durante incidentes, degradación de performance o sospechas de problemas internos de plataforma.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 0,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 9000,
+      "panels": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Distribución de tiempos de operaciones Git fetch realizadas por ArgoCD.\n\nRepresenta cuánto tarda ArgoCD en descargar cambios desde repositorios remotos.\n\nValores altos sostenidos pueden indicar:\n- GitHub/GitLab lento\n- problemas de red\n- repositorios muy grandes\n- throttling\n- manifest generation costosa\n\nUso operacional:\nUtilizar este panel cuando los syncs o refreshes estén lentos y se sospeche que el origen del problema está en Git o en la red hacia el repositorio.\nNo representa errores directamente; representa latencia de operaciones Git.",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "scaleDistribution": {
+                  "type": "linear"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 1
+          },
+          "id": 114,
+          "options": {
+            "calculate": false,
+            "calculation": {},
+            "cellGap": 2,
+            "cellValues": {},
+            "color": {
+              "exponent": 0.5,
+              "fill": "#b4ff00",
+              "mode": "scheme",
+              "reverse": false,
+              "scale": "exponential",
+              "scheme": "Spectral",
+              "steps": 128
+            },
+            "exemplars": {
+              "color": "rgba(255,0,255,0.7)"
+            },
+            "filterValues": {
+              "le": 1e-9
+            },
+            "legend": {
+              "show": false
+            },
+            "rowsFrame": {
+              "layout": "auto"
+            },
+            "showValue": "never",
+            "tooltip": {
+              "mode": "single",
+              "showColorScale": false,
+              "yHistogram": false
+            },
+            "yAxis": {
+              "axisPlacement": "left",
+              "reverse": false,
+              "unit": "short"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(increase(argocd_git_request_duration_seconds_bucket{request_type=\"fetch\", namespace=~\"$namespace\"}[$interval])) by (le)",
+              "format": "heatmap",
+              "intervalFactor": 10,
+              "legendFormat": "{{le}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Git Fetch Performance",
+          "type": "heatmap"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Distribución de tiempos de operaciones Git ls-remote.\n\nArgoCD utiliza estas consultas para verificar refs, ramas y tags remotas antes de detectar cambios o iniciar reconciliaciones.\n\nValores altos sostenidos pueden indicar:\n- lentitud del proveedor Git\n- problemas DNS/red\n- throttling\n- repositorios remotos degradados\n\nUso operacional:\nRevisar este panel cuando ArgoCD tarde en detectar cambios desde Git o cuando haya sospecha de lentitud consultando repositorios remotos.",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "scaleDistribution": {
+                  "type": "linear"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 1
+          },
+          "id": 116,
+          "options": {
+            "calculate": false,
+            "calculation": {},
+            "cellGap": 2,
+            "cellValues": {},
+            "color": {
+              "exponent": 0.5,
+              "fill": "#b4ff00",
+              "mode": "scheme",
+              "reverse": false,
+              "scale": "exponential",
+              "scheme": "Spectral",
+              "steps": 128
+            },
+            "exemplars": {
+              "color": "rgba(255,0,255,0.7)"
+            },
+            "filterValues": {
+              "le": 1e-9
+            },
+            "legend": {
+              "show": false
+            },
+            "rowsFrame": {
+              "layout": "auto"
+            },
+            "showValue": "never",
+            "tooltip": {
+              "mode": "single",
+              "showColorScale": false,
+              "yHistogram": false
+            },
+            "yAxis": {
+              "axisPlacement": "left",
+              "reverse": false,
+              "unit": "short"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(increase(argocd_git_request_duration_seconds_bucket{request_type=\"ls-remote\", namespace=~\"$namespace\"}[$interval])) by (le)",
+              "format": "heatmap",
+              "intervalFactor": 10,
+              "legendFormat": "{{le}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Git Ls-Remote Performance",
+          "type": "heatmap"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Distribución completa de tiempos de reconciliación de aplicaciones.\n\nEste heatmap muestra cómo se distribuyen las reconciliaciones según su duración.\nLos colores representan concentración de reconciliaciones en determinados tiempos.\n\nValores altos sostenidos pueden indicar:\n- repositorios lentos\n- manifest generation costosa\n- problemas de red\n- API Kubernetes lenta\n- controller sobrecargado\n\nUso operacional:\nUtilizar para troubleshooting avanzado de performance.\nPara operación diaria conviene mirar primero \"Reconciliation Avg Duration\" en Platform Health.",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "scaleDistribution": {
+                  "type": "linear"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 9
+          },
+          "id": 60,
+          "options": {
+            "calculate": true,
+            "calculation": {},
+            "cellGap": 2,
+            "cellValues": {},
+            "color": {
+              "exponent": 0.5,
+              "fill": "dark-orange",
+              "mode": "scheme",
+              "reverse": false,
+              "scale": "exponential",
+              "scheme": "Oranges",
+              "steps": 128
+            },
+            "exemplars": {
+              "color": "rgba(255,0,255,0.7)"
+            },
+            "filterValues": {
+              "le": 1e-9
+            },
+            "legend": {
+              "show": false
+            },
+            "rowsFrame": {
+              "layout": "auto"
+            },
+            "showValue": "never",
+            "tooltip": {
+              "mode": "none",
+              "showColorScale": false,
+              "yHistogram": false
+            },
+            "yAxis": {
+              "axisPlacement": "left",
+              "reverse": false
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "sum(increase(argocd_app_reconcile_bucket{namespace=~\"$namespace\"}[$interval])) by (le)",
+              "format": "heatmap",
+              "instant": false,
+              "intervalFactor": 10,
+              "legendFormat": "{{le}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Reconciliation Performance",
+          "type": "heatmap"
+        }
+      ],
+      "title": "Performance avanzada",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 9017,
+      "panels": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Memoria heap utilizada por el application-controller.\n\nEl application-controller es responsable de reconciliaciones GitOps, syncs y monitoreo continuo del estado deseado.\n\nValores altos o crecimiento sostenido pueden indicar:\n- demasiadas aplicaciones\n- reconciliaciones intensivas\n- presión sobre Kubernetes API\n- posible leak de memoria\n- manifest generation costosa\n\nUso operacional:\nRevisar ante OOMKills, reconciliaciones lentas, backlog en workqueues o consumo creciente sostenido.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 0,
+            "y": 2
+          },
+          "id": 34,
+          "options": {
+            "dataLinks": [],
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "expr": "go_memstats_heap_alloc_bytes{namespace=~\"$namespace\",pod=~\".*application-controller.*\"}",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 1,
+              "legendFormat": "{{pod}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Controller Memory Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "CPU utilizada por el application-controller.\n\nEl controller consume CPU principalmente durante reconciliaciones, syncs, consultas a Kubernetes y procesamiento de estado de aplicaciones.\n\nUso operacional:\nCorrelacionar picos de CPU con aumento en reconciliaciones, K8s API Activity, workqueue depth o sync failures.\nCPU alta sostenida puede indicar saturación o carga excesiva del controller.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 8,
+            "y": 2
+          },
+          "id": 108,
+          "options": {
+            "dataLinks": [],
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "expr": "irate(process_cpu_seconds_total{namespace=~\"$namespace\",pod=~\".*application-controller.*\"}[1m])",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 1,
+              "legendFormat": "{{pod}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Controller CPU Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Cantidad de goroutines del application-controller.\n\nLas goroutines son unidades internas de concurrencia del runtime Go.\nPor sí solas no indican salud funcional de ArgoCD.\n\nUso operacional:\nRevisar solo en troubleshooting avanzado cuando exista sospecha de leak, bloqueo interno o crecimiento anormal sostenido.\nNormalmente este panel es de bajo valor para operación diaria.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 8,
+            "x": 16,
+            "y": 2
+          },
+          "id": 62,
+          "options": {
+            "dataLinks": [],
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "expr": "go_goroutines{namespace=~\"$namespace\",pod=~\".*application-controller.*\"}",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 1,
+              "legendFormat": "{{pod}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Controller Goroutines",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Controller runtime",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 2
+      },
+      "id": 9025,
+      "panels": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Memoria heap utilizada por repo-server.\n\nRepo-server procesa repositorios Git, manifest generation, Helm, Kustomize y plugins.\n\nValores altos pueden indicar:\n- repositorios grandes\n- charts o kustomizations complejas\n- generación intensiva de manifests\n- demasiadas apps concurrentes\n- posible leak o presión de memoria\n\nUso operacional:\nRevisar ante lentitud de sync, manifest generation lenta, errores de repo-server u OOMKills.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "showValues": false,
+                "spanNulls": true,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 3
+          },
+          "id": 71,
+          "options": {
+            "dataLinks": [],
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "expr": "go_memstats_heap_alloc_bytes{namespace=~\"$namespace\",pod=~\".*repo-server.*\"}",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 1,
+              "legendFormat": "{{pod}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Repo Server Memory Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Cantidad de goroutines del repo-server.\n\nEste panel muestra concurrencia interna del runtime Go dentro de repo-server.\n\nUso operacional:\nÚtil únicamente para debugging profundo de bloqueos, crecimiento anormal de concurrencia o sospecha de leak.\nNo representa salud de GitOps directamente y normalmente no requiere revisión diaria.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 3
+          },
+          "id": 72,
+          "options": {
+            "dataLinks": [],
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "expr": "go_goroutines{namespace=~\"$namespace\",pod=~\".*repo-server.*\"}",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 1,
+              "legendFormat": "{{pod}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Repo Server Goroutines",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Repo server runtime",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 3
+      },
+      "id": 9033,
+      "panels": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Memoria heap utilizada por argocd-server.\n\nEste componente maneja UI, API, autenticación, sesiones y tráfico gRPC/HTTP.\n\nValores altos o crecimiento sostenido pueden indicar:\n- exceso de sesiones\n- tráfico API elevado\n- problemas internos\n- presión sobre autenticación o cache\n\nUso operacional:\nRevisar ante lentitud de UI, problemas de login, degradación de API u OOMKills.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "showValues": false,
+                "spanNulls": true,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 0,
+            "y": 4
+          },
+          "id": 61,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "go_memstats_heap_alloc_bytes{namespace=~\"$namespace\",pod=~\".*argocd-server.*\"}",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 1,
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ],
+          "title": "ArgoCD Server Memory Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Cantidad de goroutines del argocd-server.\n\nMuestra concurrencia interna del runtime Go en el componente que expone UI/API.\n\nUso operacional:\nUsar solo en incidentes o debugging avanzado cuando exista crecimiento anormal sostenido, sospecha de leak o bloqueo interno.\nNo es una métrica principal de salud funcional.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 8,
+            "y": 4
+          },
+          "id": 36,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "expr": "go_goroutines{namespace=~\"$namespace\",pod=~\".*argocd-server.*\"}",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 1,
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ],
+          "title": "ArgoCD Server Goroutines",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Tiempo de pausas de Garbage Collection del runtime Go en argocd-server.\n\nEl GC limpia memoria interna del proceso Go.\nValores altos pueden aparecer cuando hay presión de memoria o alta creación de objetos.\n\nUso operacional:\nPanel de debugging avanzado. Revisar solo si hay consumo de memoria elevado, latencia en UI/API o sospecha de presión del runtime Go.\nSi esta métrica no existe en tu entorno, puede eliminarse sin afectar el monitoreo principal.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "showValues": false,
+                "spanNulls": true,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 16,
+            "y": 4
+          },
+          "id": 38,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "expr": "go_gc_duration_seconds{namespace=~\"$namespace\",pod=~\".*argocd-server.*\",quantile=~\"1|1.0\"}",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{pod}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "ArgoCD Server GC Time",
+          "type": "timeseries"
+        }
+      ],
+      "title": "ArgoCD server runtime",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 9042,
+      "panels": [
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Cantidad de requests gRPC internas agrupadas por servicio.\n\nMuestra la actividad interna entre componentes de ArgoCD, incluyendo UI, API, repository, cluster y autenticación.\n\nUso operacional:\nSirve para detectar servicios internos con tráfico anormal, sobrecarga o actividad inesperada.\nNo representa errores directamente; para errores críticos usar el panel \"ArgoCD Critical Internal API Errors\".",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 5
+          },
+          "id": 9901,
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "expr": "sum(\n  increase(\n    grpc_server_handled_total{\n      job=\"argocd-server-metrics\",\n      namespace=~\"$namespace\"\n    }[$interval]\n  )\n) by (grpc_service)",
+              "format": "time_series",
+              "legendFormat": "{{grpc_service}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Internal API Traffic by Service",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "uid": "$datasource"
+          },
+          "description": "Errores gRPC internos críticos de ArgoCD agrupados por servicio y tipo de error.\n\nEste panel muestra fallos internos entre componentes de ArgoCD utilizando gRPC.\nValores distintos de OK pueden indicar problemas reales de infraestructura, timeouts, saturación, fallos de conectividad o errores internos del controller/API.\n\nCódigos monitoreados:\n- Internal: errores internos del servicio\n- Unavailable: servicio no disponible o problemas de red\n- DeadlineExceeded: requests que excedieron el timeout\n- ResourceExhausted: saturación o falta de recursos\n\nUso operacional:\nDetectar problemas internos entre componentes de ArgoCD antes de que se reflejen como fallos visibles en syncs, UI o reconciliaciones.\n\nNo representa salud funcional de aplicaciones GitOps directamente; es una vista de troubleshooting avanzado.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 5
+          },
+          "id": 99,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "$datasource"
+              },
+              "editorMode": "code",
+              "expr": "sum(\n  increase(\n    grpc_server_handled_total{\n      job=\"argocd-server-metrics\",\n      namespace=~\"$namespace\",\n      grpc_code=~\"Internal|Unavailable|DeadlineExceeded|ResourceExhausted\"\n    }[$interval]\n  )\n) by (grpc_service, grpc_code)",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 1,
+              "legendFormat": "{{grpc_code}} - {{grpc_service}}",
+              "range": true,
+              "refId": "C"
+            }
+          ],
+          "title": "ArgoCD Critical Internal API Errors",
+          "type": "timeseries"
+        }
+      ],
+      "title": "gRPC services",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 9075,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Cantidad de requests fallidas hacia Redis.\n\nRedis es utilizado por ArgoCD para cache, sesiones y datos temporales.\nValores mayores a 0 pueden indicar:\n- problemas de conectividad\n- timeouts\n- saturación\n- fallos del servicio Redis\n- problemas de red internos\n\nUso operacional:\nUn aumento sostenido puede impactar performance, sesiones, cache y estabilidad interna de ArgoCD.\nIdealmente este panel debe permanecer en 0.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 1
+                  },
+                  {
+                    "color": "red",
+                    "value": 5
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 24,
+            "x": 0,
+            "y": 6
+          },
+          "id": 112,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum(\n  increase(\n    argocd_redis_request_total{\n      namespace=~\"$namespace\",\n      failed=\"true\"\n    }[$interval]\n  )\n) or vector(0)",
+              "hide": false,
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "Redis Failed Requests",
+          "type": "stat"
+        }
+      ],
+      "title": "Redis",
+      "type": "row"
+    }
+  ],
+  "preload": false,
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "argocd",
+    "gitops"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "Internal Mimir",
+          "value": "prometheus"
+        },
+        "includeAll": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "argocd",
+          "value": "argocd"
+        },
+        "datasource": "$datasource",
+        "definition": "label_values(kube_pod_info, namespace)",
+        "includeAll": true,
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(kube_pod_info, namespace)",
+          "refId": "Prometheus-namespace-Variable-Query"
+        },
+        "refresh": 1,
+        "regex": ".*argocd.*",
+        "type": "query"
+      },
+      {
+        "auto": true,
+        "auto_count": 30,
+        "auto_min": "1m",
+        "current": {
+          "text": "$__auto",
+          "value": "$__auto"
+        },
+        "name": "interval",
+        "options": [
+          {
+            "selected": false,
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "selected": false,
+            "text": "5m",
+            "value": "5m"
+          },
+          {
+            "selected": false,
+            "text": "10m",
+            "value": "10m"
+          },
+          {
+            "selected": false,
+            "text": "30m",
+            "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
+          },
+          {
+            "selected": false,
+            "text": "2h",
+            "value": "2h"
+          },
+          {
+            "selected": false,
+            "text": "4h",
+            "value": "4h"
+          },
+          {
+            "selected": false,
+            "text": "8h",
+            "value": "8h"
+          }
+        ],
+        "query": "1m,5m,10m,30m,1h,2h,4h,8h",
+        "refresh": 2,
+        "type": "interval"
+      },
+      {
+        "current": {
+          "text": "namespace",
+          "value": "namespace"
+        },
+        "includeAll": false,
+        "name": "grouping",
+        "options": [
+          {
+            "selected": true,
+            "text": "namespace",
+            "value": "namespace"
+          },
+          {
+            "selected": false,
+            "text": "name",
+            "value": "name"
+          },
+          {
+            "selected": false,
+            "text": "project",
+            "value": "project"
+          }
+        ],
+        "query": "namespace,name,project",
+        "type": "custom"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "$datasource",
+        "definition": "label_values(argocd_cluster_info, server)",
+        "includeAll": true,
+        "name": "cluster",
+        "options": [],
+        "query": {
+          "query": "label_values(argocd_cluster_info, server)",
+          "refId": "Prometheus-cluster-Variable-Query"
+        },
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "$__all",
+          "value": "$__all"
+        },
+        "includeAll": true,
+        "name": "health_status",
+        "options": [
+          {
+            "selected": false,
+            "text": "Healthy",
+            "value": "Healthy"
+          },
+          {
+            "selected": false,
+            "text": "Progressing",
+            "value": "Progressing"
+          },
+          {
+            "selected": false,
+            "text": "Suspended",
+            "value": "Suspended"
+          },
+          {
+            "selected": false,
+            "text": "Missing",
+            "value": "Missing"
+          },
+          {
+            "selected": false,
+            "text": "Degraded",
+            "value": "Degraded"
+          },
+          {
+            "selected": false,
+            "text": "Unknown",
+            "value": "Unknown"
+          }
+        ],
+        "query": "Healthy,Progressing,Suspended,Missing,Degraded,Unknown",
+        "type": "custom"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "$__all",
+          "value": "$__all"
+        },
+        "includeAll": true,
+        "name": "sync_status",
+        "options": [
+          {
+            "selected": false,
+            "text": "Synced",
+            "value": "Synced"
+          },
+          {
+            "selected": false,
+            "text": "OutOfSync",
+            "value": "OutOfSync"
+          },
+          {
+            "selected": false,
+            "text": "Unknown",
+            "value": "Unknown"
+          }
+        ],
+        "query": "Synced,OutOfSync,Unknown",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "ArgoCD / 03 Deep Debugging",
+  "uid": "argocd-03-deep-debugging",
+  "version": 13
+}
